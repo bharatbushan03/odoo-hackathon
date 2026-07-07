@@ -16,3 +16,5 @@ Then run backend and frontend in separate terminals (see docs/SETUP.md).
 1. Run setup.sh successfully on every laptop
 2. Fill in docs/API_CONTRACT.md the moment the problem statement drops
 3. Assign Integration Owner in docs/SETUP.md
+
+## Added the rule so that no one can add commit directly to main branch
