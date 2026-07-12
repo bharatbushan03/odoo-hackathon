@@ -1,28 +1,30 @@
+import PageTopBar from '../../components/layout/page-topbar.jsx';
 import '../../styles/assetflow-theme.css';
 
 const STATS = [
-  { label: 'Available Assets', value: 108 },
-  { label: 'Allocated', value: 30 },
-  { label: 'In Maintenance', value: 6 },
+  { label: 'Available', value: 108 },
+  { label: 'Allocated', value: 56 },
+  { label: 'Overdue', value: 9 },
   { label: 'Active Bookings', value: 4 },
   { label: 'Pending Transfers', value: 3 },
-  { label: 'Upcoming Returns', value: 12 },
+  { label: 'Upcoming Returns', value: 10 },
 ];
 
 const ACTIVITY = [
-  { text: 'Laptop AF-0274 allocated to Priya Shah — Engineering' },
-  { text: 'Room 201 booking confirmed — 10:00–11:30' },
-  { text: 'Maintenance resolved — AF-0062 Projector bulb replaced' },
-  { text: 'Transfer request approved — AF-0114 Dell Laptop' },
-  { text: 'Overdue return flagged — AF-0121 due 5 days ago' },
+  'Laptop AF-0714 — allocated to Priya Shah — IT dept',
+  'Room 201 — booking confirmed — 10:00–11:30',
+  'Maintenance resolved — AF-0062 Projector bulb replaced',
+  'Transfer request approved — AF-0114 Dell Laptop',
+  'Overdue return flagged — AF-0121 due 5 days ago',
 ];
 
 export default function DashboardPage() {
   return (
     <div className="af-page">
+      <PageTopBar />
+
       <header className="af-page__header">
         <h1 className="af-page__title">Today&apos;s Overview</h1>
-        <p className="af-page__subtitle">AssetFlow dashboard — real-time status</p>
       </header>
 
       <div className="af-stats">
@@ -47,10 +49,8 @@ export default function DashboardPage() {
       <div className="af-card">
         <div className="af-card__header">Recent Activity</div>
         <ul className="af-list">
-          {ACTIVITY.map((item, i) => (
-            <li key={i} className="af-list__item">
-              {item.text}
-            </li>
+          {ACTIVITY.map((text, i) => (
+            <li key={i} className="af-list__item">{text}</li>
           ))}
         </ul>
       </div>

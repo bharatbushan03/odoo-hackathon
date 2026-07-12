@@ -1,17 +1,18 @@
 import { useState } from 'react';
+import PageTopBar from '../../components/layout/page-topbar.jsx';
 import '../../styles/assetflow-theme.css';
 
 const FILTERS = ['All', 'Alerts', 'Approvals', 'Bookings'];
 
 const NOTIFICATIONS = [
-  { type: 'allocation', text: 'Laptop AF-0274 assigned to Priya Shah', time: '3m ago' },
+  { type: 'allocation', text: 'Laptop AF-0114 assigned to Priya Shah', time: '3m ago' },
   { type: 'alert', text: 'Overdue return — AF-0121 was due 5 days ago', time: '1d ago' },
   { type: 'booking', text: 'Booking confirmed — Room 201, 10:00–11:30', time: '2h ago' },
-  { type: 'approval', text: 'Transfer request approved — AF-0114', time: '4h ago' },
-  { type: 'alert', text: 'Maintenance overdue — AF-0062 Projector', time: '6h ago' },
+  { type: 'approval', text: 'Maintenance request AF-0118 approved', time: '10h ago' },
+  { type: 'alert', text: 'Audit discrepancy flagged: AF-0110 damaged', time: '2d ago' },
   { type: 'allocation', text: 'Monitor AF-0088 returned to pool', time: '1d ago' },
   { type: 'booking', text: 'Booking cancelled — Room 302', time: '2d ago' },
-  { type: 'approval', text: 'Maintenance request approved — AF-0031', time: '3d ago' },
+  { type: 'approval', text: 'Transfer request approved — AF-0114', time: '4h ago' },
 ];
 
 const TYPE_ICON = { allocation: '→', alert: '⚠', booking: '📅', approval: '✓' };
@@ -29,9 +30,10 @@ export default function NotificationsPage() {
 
   return (
     <div className="af-page">
+      <PageTopBar />
+
       <header className="af-page__header">
         <h1 className="af-page__title">Activity Logs &amp; Notifications</h1>
-        <p className="af-page__subtitle">System events, alerts, and approvals</p>
       </header>
 
       <div className="af-tabs">
@@ -54,9 +56,7 @@ export default function NotificationsPage() {
               <span style={{ width: '20px', textAlign: 'center', flexShrink: 0 }}>
                 {TYPE_ICON[n.type]}
               </span>
-              <span style={{ flex: 1 }}>
-                <strong>{n.text}</strong>
-              </span>
+              <span style={{ flex: 1 }}>{n.text}</span>
               <span style={{ color: 'var(--af-text-dim)', fontSize: '11px', flexShrink: 0 }}>
                 {n.time}
               </span>

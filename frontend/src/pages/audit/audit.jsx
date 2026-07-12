@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PageTopBar from '../../components/layout/page-topbar.jsx';
 import '../../styles/assetflow-theme.css';
 
 const ITEMS = [
@@ -20,9 +21,11 @@ export default function AuditPage() {
 
   return (
     <div className="af-page">
+      <PageTopBar />
+
       <header className="af-page__header">
         <h1 className="af-page__title">Asset Audit</h1>
-        <p className="af-page__subtitle">60 items — Engineering dept — HQ North</p>
+        <p className="af-page__subtitle">Q2 audit — Engineering dept — 60 items</p>
       </header>
 
       <div className="af-card">
@@ -62,7 +65,7 @@ export default function AuditPage() {
                       </button>
                       <button
                         type="button"
-                        className={`af-btn af-btn--sm${statuses[item.tag] === 'damaged' ? '' : ''}`}
+                        className="af-btn af-btn--sm"
                         style={statuses[item.tag] === 'damaged' ? { borderColor: 'rgba(251,146,60,0.4)', color: '#fb923c' } : {}}
                         onClick={() => setStatus(item.tag, 'damaged')}
                       >
@@ -84,7 +87,7 @@ export default function AuditPage() {
       )}
 
       <div className="af-actions" style={{ marginTop: '16px' }}>
-        <button type="button" className="af-btn af-btn--primary">Finalize audit cycle</button>
+        <button type="button" className="af-btn af-btn--primary">Close audit cycle</button>
       </div>
     </div>
   );

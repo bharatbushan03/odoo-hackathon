@@ -6,8 +6,8 @@
   --auth-text: #e8e8e8;
   --auth-text-muted: #9a9a9a;
   --auth-text-dim: #6b6b6b;
-  --auth-accent: #2dd4bf;
-  --auth-accent-hover: #14b8a6;
+  --auth-accent: #4ade80;
+  --auth-accent-hover: #22c55e;
   --auth-error-bg: rgba(201, 42, 42, 0.12);
   --auth-error-border: rgba(201, 42, 42, 0.35);
   --auth-error-text: #ff8a8a;
@@ -282,7 +282,7 @@
   width: 28px;
   height: 28px;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #2dd4bf;
+  border-top-color: #4ade80;
   border-radius: 50%;
   animation: auth-spin 0.7s linear infinite;
 }

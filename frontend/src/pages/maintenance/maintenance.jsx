@@ -1,3 +1,4 @@
+import PageTopBar from '../../components/layout/page-topbar.jsx';
 import '../../styles/assetflow-theme.css';
 import './maintenance.css';
 
@@ -23,9 +24,11 @@ const COLUMNS = [
 export default function MaintenancePage() {
   return (
     <div className="af-page">
+      <PageTopBar />
+
       <header className="af-page__header">
         <h1 className="af-page__title">Maintenance Management</h1>
-        <p className="af-page__subtitle">Track repair workflows across all assets</p>
+        <p className="af-page__subtitle">Kanban workflow — Pending to Resolved</p>
       </header>
 
       <div className="kanban">
