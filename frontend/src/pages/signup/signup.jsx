@@ -131,6 +131,14 @@ export default function SignupPage() {
           </button>
         </form>
 
+        <div className="auth-divider" style={{ marginTop: '16px' }}>
+          <span>Need to create an organization?</span>
+        </div>
+
+        <Link to="/register-org" className="auth-btn auth-btn--outline auth-btn--link">
+          Register Organization
+        </Link>
+
         <p className="auth-card__footer">
           Already have an account?{' '}
           <Link to="/login" className="auth-card__link">

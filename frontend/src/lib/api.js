@@ -46,6 +46,12 @@ export const authApi = {
       body: JSON.stringify({ name, email, password, organizationCode }),
     }),
 
+  signupOrg: (orgName, orgCode, name, email, password) =>
+    apiFetch('/api/v1/auth/register-organization', {
+      method: 'POST',
+      body: JSON.stringify({ orgName, orgCode, name, email, password }),
+    }),
+
   me: () => apiFetch('/api/v1/auth/me'),
 
   forgotPassword: (email) =>

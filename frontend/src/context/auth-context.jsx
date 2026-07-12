@@ -65,9 +65,22 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
+  const signupOrg = useCallback(async (orgName, orgCode, name, email, password) => {
+    const data = await authApi.signupOrg(orgName, orgCode, name, email, password);
+    setToken(data.token);
+    setUser({
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      departmentId: data.departmentId,
+    });
+    return data;
+  }, []);
+
   const value = useMemo(
-    () => ({ user, loading, login, signup, logout, refreshUser, isAuthenticated: !!user }),
-    [user, loading, login, signup, logout, refreshUser],
+    () => ({ user, loading, login, signup, signupOrg, logout, refreshUser, isAuthenticated: !!user }),
+    [user, loading, login, signup, signupOrg, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
