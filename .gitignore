@@ -8,3 +8,13 @@ dist/
 build/
 *.log
 .DS_Store
+.venv
+
+# Coding agent config files
+**/AGENTS.md
+**/CLAUDE.md
+**/.cursorrules
+**/.cursor/
+**/.qodo/
+**/.windsurf/
+**/.github/copilot-instructions.md
