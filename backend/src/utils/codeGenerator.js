@@ -223,8 +223,8 @@ module.exports = {
   generateBarcodeFromAPI,
   generateCompositeBarcodeQR,
   generateQRCodeAssetTagFormat,
-  generateBarcodeFromAPI format,
+  generateBarcodeFromAPIFormat,
   generateQRCodeHighQuality,
   generateQRCodeDataURL,
-  generateCode format
+  generateCodeFormat
 };

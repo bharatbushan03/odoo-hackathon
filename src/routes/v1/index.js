@@ -4,6 +4,7 @@ const { ResponseWrapper } = require('../../utils');
 const organizationRoutes = require('./organizationRoutes');
 const assignmentRoutes = require('./assignmentRoutes');
 const notificationRoutes = require('./notificationRoutes');
+const dashboardRoutes = require('./dashboardRoutes');
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.get('/health', (req, res) => {
 router.use('/organizations', organizationRoutes);
 router.use('/assignments', assignmentRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 module.exports = router;

@@ -13,7 +13,6 @@ enum Role {
   ASSET_MANAGER
   DEPT_HEAD
   EMPLOYEE
-  AUDITOR
 }
 
 enum DepartmentStatus {
@@ -163,12 +162,13 @@ model Employee {
   updatedAt               DateTime     @updatedAt
   deletedAt               DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  department   Department?  @relation(fields: [departmentId], references: [id])
-  headedDepartments Department[] @relation("DepartmentHead")
-  raisedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceRaisedBy")
+  organization      Organization      @relation(fields: [organizationId], references: [id])
+  department        Department?       @relation(fields: [departmentId], references: [id])
+  headedDepartments Department[]      @relation("DepartmentHead")
+  assignedAssets    Asset[]           @relation("AssignedAssets")
+  raisedMaintenanceRequests   MaintenanceRequest[] @relation("MaintenanceRaisedBy")
   technicianMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceTechnician")
-  approvedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceApprovedBy")
+  approvedMaintenanceRequests  MaintenanceRequest[] @relation("MaintenanceApprovedBy")
   completedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceCompletedBy")
   uploadedMaintenanceAttachments MaintenanceAttachment[] @relation("MaintenanceAttachmentUploader")
   bookings Booking[]
@@ -207,39 +207,33 @@ model Asset {
   serialNumber        String?            @unique
   barcode             String?            @unique
   qrcode              String?            @unique
-  
   vendor              String?
   purchaseDate        DateTime
   purchaseCost        Float
-  
   warranty            String?
   warrantyExpires     DateTime?
-  
   department          Department?        @relation(fields: [departmentId], references: [id])
   departmentId        String?
-  
-  assignedEmployee    Employee?          @relation(fields: [assignedEmployeeId], references: [id])
+  assignedEmployee    Employee?          @relation("AssignedAssets", fields: [assignedEmployeeId], references: [id])
   assignedEmployeeId  String?
-  
   currentLocation     String
   category            AssetCategory      @relation(fields: [categoryId], references: [id])
   categoryId          String
-  
   lifecycleState      LifecycleState     @default(NEW)
   status              AssetStatus        @default(Available)
   condition           Condition          @default(GOOD)
-  
   notes               String?
   purchaseOrderNumber String?
   orderDate           DateTime?
-  
   shared              Boolean            @default(false)
   bookable            Boolean            @default(false)
   assetCondition      Condition          @default(GOOD)
-  
 
   attachments         AssetAttachment[]
-  
+  allocations         Allocation[]
+  bookings            Booking[]
+  maintenanceRequests MaintenanceRequest[]
+
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
@@ -405,7 +399,7 @@ model MaintenanceAttachment {
   fileType            String
   fileSize            Int
   uploadedById        String
-  uploadedBy          Employee           @relation(fields: [uploadedById], references: [id])
+  uploadedBy          Employee           @relation("MaintenanceAttachmentUploader", fields: [uploadedById], references: [id])
   uploadedAt          DateTime           @default(now())
 
   @@index([maintenanceRequestId])
@@ -425,5 +419,3 @@ model RefreshToken {
   @@index([employeeId])
   @@map("refresh_tokens")
 }
-
-
