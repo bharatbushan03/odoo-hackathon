@@ -333,6 +333,39 @@
   opacity: 0.7;
 }
 
+.organization-setup__card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--erp-border);
+}
+
+.organization-setup__promote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius-sm);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--erp-primary);
+  cursor: pointer;
+  transition:
+    border-color var(--erp-transition),
+    background var(--erp-transition),
+    color var(--erp-transition),
+    transform var(--erp-transition);
+}
+
+.organization-setup__promote-btn:hover {
+  border-color: var(--erp-primary);
+  background: var(--erp-primary-light);
+  transform: translateY(-1px);
+}
+
 .organization-setup__empty {
   grid-column: 1 / -1;
   padding: 48px 24px;
