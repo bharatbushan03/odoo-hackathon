@@ -133,6 +133,19 @@ const getActivitySummary = async (organizationId, filters = {}) => {
   }));
 };
 
+const logAssetChange = async ({ assetId, action, oldValues, newValues, employeeId, role, description, organizationId }) => {
+  return log({
+    organizationId,
+    employeeId,
+    action,
+    entityType: 'Asset',
+    entityId: assetId,
+    description: description || `Asset ${action.toLowerCase()}`,
+    oldValues,
+    newValues,
+  });
+};
+
 const cleanupOldAuditLogs = async (cutoffDate) => {
   const result = await prisma.auditLog.deleteMany({
     where: { createdAt: { lt: cutoffDate } },
@@ -153,4 +166,5 @@ module.exports = {
   getEntityAuditLogs,
   getActivitySummary,
   cleanupOldAuditLogs,
+  logAssetChange,
 };

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import PageTopBar from '../../components/layout/page-topbar.jsx';
 import '../../styles/assetflow-theme.css';
+import { transferApi } from '../../lib/api.js';
 
 const ASSETS = [
-  { id: 'AF-0114', label: 'AF-0114 — Dell Laptop', holder: 'Priya Shah', dept: 'Engineering' },
-  { id: 'AF-0012', label: 'AF-0012 — Dell Laptop', holder: 'David Kim', dept: 'Engineering' },
-  { id: 'AF-0062', label: 'AF-0062 — Epson Projector', holder: 'Pool', dept: '—' },
+  { id: 'AF-0114', label: 'AF-0114 — Dell Laptop', holder: 'Priya Shah', dept: 'Engineering', holderType: 'employee', holderId: 'emp-1' },
+  { id: 'AF-0012', label: 'AF-0012 — Dell Laptop', holder: 'David Kim', dept: 'Engineering', holderType: 'employee', holderId: 'emp-2' },
+  { id: 'AF-0062', label: 'AF-0062 — Epson Projector', holder: 'Pool', dept: '—', holderType: 'department', holderId: 'dept-1' },
 ];
 
 const HISTORY = [
@@ -14,20 +15,65 @@ const HISTORY = [
   { date: '2025-08-02', from: 'Pool', to: 'James Wilson', reason: 'Department transfer' },
 ];
 
+const EMPLOYEES = [
+  { id: 'emp-1', name: 'Priya Shah', dept: 'Engineering' },
+  { id: 'emp-2', name: 'David Kim', dept: 'Engineering' },
+  { id: 'emp-3', name: 'Emily Davis', dept: 'Marketing' },
+  { id: 'emp-4', name: 'James Wilson', dept: 'Operations' },
+];
+
 export default function AllocationPage() {
   const [assetId, setAssetId] = useState('AF-0114');
   const [to, setTo] = useState('');
   const [reason, setReason] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const asset = ASSETS.find((a) => a.id === assetId) || ASSETS[0];
   const isAllocated = asset.holder !== 'Pool';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!to || !reason.trim()) return;
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const targetEmployee = EMPLOYEES.find((e) => e.id === to);
+      if (!targetEmployee) {
+        throw new Error('Invalid target employee');
+      }
+
+      await transferApi.create({
+        assetId: asset.id,
+        fromHolderType: asset.holderType,
+        fromHolderId: asset.holderId,
+        fromHolderName: asset.holder,
+        toHolderType: 'employee',
+        toHolderId: targetEmployee.id,
+        toHolderName: targetEmployee.name,
+        reason: reason.trim(),
+      });
+
+      setSuccess('Transfer request submitted successfully!');
+      setTo('');
+      setReason('');
+    } catch (err) {
+      setError(err.message || 'Failed to submit transfer request');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="af-page">
       <PageTopBar />
 
       <header className="af-page__header">
-        <h1 className="af-page__title">Allocation &amp; Transfer</h1>
+        <h1 className="af-page__title">Allocation & Transfer</h1>
       </header>
 
       <div className="af-form-group" style={{ maxWidth: '400px' }}>
@@ -58,11 +104,17 @@ export default function AllocationPage() {
         </div>
         <div className="af-form-group">
           <label className="af-label" htmlFor="transfer-to">To</label>
-          <select id="transfer-to" className="af-select" style={{ width: '100%' }} value={to} onChange={(e) => setTo(e.target.value)}>
+          <select
+            id="transfer-to"
+            className="af-select"
+            style={{ width: '100%' }}
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          >
             <option value="">Select Employee...</option>
-            <option value="david">David Kim — Engineering</option>
-            <option value="emily">Emily Davis — Marketing</option>
-            <option value="james">James Wilson — Operations</option>
+            {EMPLOYEES.map((e) => (
+              <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>
+            ))}
           </select>
         </div>
         <div className="af-form-group">
@@ -75,8 +127,15 @@ export default function AllocationPage() {
             onChange={(e) => setReason(e.target.value)}
           />
         </div>
-        <button type="button" className="af-btn af-btn--primary" disabled={!to || !reason.trim()}>
-          Submit Request
+        {error && <div className="af-alert af-alert--danger" style={{ marginTop: '12px' }}>{error}</div>}
+        {success && <div className="af-alert af-alert--success" style={{ marginTop: '12px' }}>{success}</div>}
+        <button
+          type="button"
+          className="af-btn af-btn--primary"
+          disabled={!to || !reason.trim() || loading}
+          onClick={handleSubmit}
+        >
+          {loading ? 'Submitting...' : 'Submit Request'}
         </button>
       </div>
 

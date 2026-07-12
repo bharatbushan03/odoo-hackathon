@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PageTopBar from '../../components/layout/page-topbar.jsx';
+import { auditApi } from '../../lib/api.js';
 import '../../styles/assetflow-theme.css';
 
 const ITEMS = [
@@ -12,12 +13,33 @@ const ITEMS = [
 
 export default function AuditPage() {
   const [statuses, setStatuses] = useState({});
+  const [closing, setClosing] = useState(false);
+  const [closeResult, setCloseResult] = useState(null);
 
   const setStatus = (tag, status) => {
     setStatuses((prev) => ({ ...prev, [tag]: status }));
   };
 
   const flagged = Object.values(statuses).filter((s) => s === 'missing' || s === 'damaged').length;
+
+  const handleCloseAudit = async () => {
+    setClosing(true);
+    setCloseResult(null);
+    try {
+      const result = await auditApi.close(auditId);
+      setCloseResult({
+        success: true,
+        message: `Audit closed successfully. ${result.flaggedCount || flagged} items flagged.`,
+      });
+    } catch (err) {
+      setCloseResult({
+        success: false,
+        message: err.message || 'Failed to close audit',
+      });
+    } finally {
+      setClosing(false);
+    }
+  };
 
   return (
     <div className="af-page">
@@ -87,8 +109,21 @@ export default function AuditPage() {
       )}
 
       <div className="af-actions" style={{ marginTop: '16px' }}>
-        <button type="button" className="af-btn af-btn--primary">Close audit cycle</button>
+        <button
+          type="button"
+          className="af-btn af-btn--primary"
+          onClick={handleCloseAudit}
+          disabled={closing}
+        >
+          {closing ? 'Closing...' : 'Close audit cycle'}
+        </button>
       </div>
+
+      {closeResult && (
+        <div className={`af-alert ${closeResult.success ? 'af-alert--success' : 'af-alert--danger'}`} style={{ marginTop: '16px' }} role="alert">
+          {closeResult.message}
+        </div>
+      )}
     </div>
   );
 }

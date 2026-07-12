@@ -9,6 +9,7 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [organizationCode, setOrganizationCode] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,7 +28,7 @@ export default function SignupPage() {
 
     setSubmitting(true);
     try {
-      await signup(name, email, password);
+      await signup(name, email, password, organizationCode);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message || 'Signup failed. Please try again.');
@@ -39,7 +40,7 @@ export default function SignupPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-card__title">AssetFlow — register</h1>
+        <h1 className="auth-card__title">AssetFlow \u2014 register</h1>
 
         <div className="auth-card__logo-wrap">
           <div className="auth-card__logo-circle" aria-hidden="true">AF</div>
@@ -85,6 +86,22 @@ export default function SignupPage() {
           </div>
 
           <div className="auth-form__group">
+            <label className="auth-form__label" htmlFor="signup-org-code">
+              Organization code
+            </label>
+            <input
+              id="signup-org-code"
+              type="text"
+              className="auth-form__input"
+              placeholder="ORG123"
+              value={organizationCode}
+              onChange={(e) => setOrganizationCode(e.target.value.toUpperCase())}
+              autoComplete="organization"
+              required
+            />
+          </div>
+
+          <div className="auth-form__group">
             <label className="auth-form__label" htmlFor="signup-password">
               Password
             </label>
@@ -92,7 +109,7 @@ export default function SignupPage() {
               id="signup-password"
               type="password"
               className="auth-form__input"
-              placeholder="••••••••"
+              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"

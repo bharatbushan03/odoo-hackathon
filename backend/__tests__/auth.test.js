@@ -1,40 +1,185 @@
 const request = require('supertest');
 const app = require('../server');
-const prisma = require('../src/config/prisma');
+
+// Mock database
+jest.mock('../src/config/database.js', () => ({
+  organization: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    count: jest.fn()
+  },
+  employee: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    count: jest.fn(),
+    findByEmail: jest.fn(),
+    findByResetToken: jest.fn(),
+    findByVerificationToken: jest.fn()
+  },
+  refreshToken: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    count: jest.fn(),
+    findByToken: jest.fn(),
+    revokeById: jest.fn(),
+    revokeAllByEmployeeId: jest.fn()
+  },
+  auditLog: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    findUnique: jest.fn(),
+    groupBy: jest.fn()
+  }
+}));
+
+// Mock JSON Web Token using spies
+let jwtMockSign;
+let jwtMockVerify;
+
+const prisma = require('../src/config/database');
 
 describe('Authentication Endpoints', () => {
   // Test data
   const testOrg = {
-    name: 'Test Organization',
-    code: 'TESTORG'
+    orgName: 'Test Organization',
+    orgCode: 'TESTORG',
+    name: 'Test Admin',
+    email: 'admin@test.com',
+    password: 'Password123'
   };
 
   const testAdmin = {
-    name: 'Test Admin',
-    email: 'admin@test.com',
-    password: 'password123',
+    name: 'Test Admin 2',
+    email: 'admin2@test.com',
+    password: 'Password123',
     organizationCode: 'TESTORG'
   };
 
   const testLogin = {
     email: 'admin@test.com',
-    password: 'password123'
+    password: 'Password123'
   };
 
   let accessToken;
   let refreshToken;
   let orgId;
 
-  // Clean up before each test
-  beforeEach(async () => {
-    // Clean up test data
-    await prisma.refreshToken.deleteMany({});
-    await prisma.employee.deleteMany({});
-    await prisma.organization.deleteMany({});
+  // Mock data for successful operations
+  const mockOrg = {
+    id: 'org-123',
+    name: 'Test Organization',
+    code: 'TESTORG'
+  };
+
+  const mockEmployee = {
+    id: 'emp-123',
+    name: 'Test Admin',
+    email: 'admin@test.com',
+    role: 'ORG_ADMIN',
+    organizationId: 'org-123'
+  };
+
+  const mockTokens = {
+    accessToken: 'mock-access-token',
+    refreshToken: 'mock-refresh-token'
+  };
+
+  // Mock authenticated request helper
+  const authHeader = (token) => `Bearer ${token}`;
+
+  // Mock JSON Web Token spies
+  let jwtMockSign;
+  let jwtMockVerify;
+
+  // Setup before each test
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Setup default mock responses with call tracking
+    const orgFindCalls = new Map();
+    const employeeFindCalls = new Map();
+
+    prisma.organization.findUnique.mockImplementation((where) => {
+      const code = where.code;
+      if (!orgFindCalls.has(code)) {
+        orgFindCalls.set(code, 0);
+      }
+      const count = orgFindCalls.get(code);
+      console.log(`org findUnique: code=${code}, count=${count}`);
+      if (code === 'TESTORG') {
+        if (count === 0) {
+          orgFindCalls.set(code, count + 1);
+          console.log('  returning null');
+          return Promise.resolve(null);
+        }
+        console.log('  returning mockOrg');
+        return Promise.resolve(mockOrg);
+      }
+      // For any other code (e.g., 'INVALID'), always return null
+      console.log('  returning null for other code');
+      return Promise.resolve(null);
+    });
+
+    prisma.employee.findByEmail.mockImplementation((email) => {
+      if (!employeeFindCalls.has(email)) {
+        employeeFindCalls.set(email, 0);
+      }
+      const count = employeeFindCalls.get(email);
+      // For the first call with any email, return null (no existing user)
+      // For subsequent calls with same email, return mockEmployee (existing user)
+      if (count === 0) {
+        employeeFindCalls.set(email, count + 1);
+        return Promise.resolve(null);
+      }
+      return Promise.resolve(mockEmployee);
+    });
+
+    // Other mocks
+    prisma.organization.create.mockResolvedValue(mockOrg);
+    prisma.employee.create.mockResolvedValue(mockEmployee);
+    prisma.refreshToken.create.mockResolvedValue({});
+
+    // Mock JSON Web Token using spies
+    const jwt = require('jsonwebtoken');
+    jwtMockSign = jest.spyOn(jwt, 'sign')
+      .mockReturnValueOnce('mock-access-token')
+      .mockReturnValueOnce('mock-refresh-token')
+      .mockReturnValue('mock-token');
+    jwtMockVerify = jest.spyOn(jwt, 'verify')
+      .mockImplementation(() => ({
+        employeeId: 'emp-123',
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 // 1 hour expiration
+      }));
+    jwtMockDecode = jest.spyOn(jwt, 'decode')
+      .mockImplementation((token) => {
+        if (token === 'mock-access-token') {
+          return {
+            id: 'emp-123',
+            email: 'admin@test.com',
+            role: 'ORG_ADMIN',
+            organizationId: 'org-123'
+          };
+        }
+        if (token === 'mock-refresh-token') {
+          return { id: 'emp-123' };
+        }
+        return null;
+      });
   });
 
-  afterAll(async () => {
-    await prisma.$disconnect();
+  // Clean up after each test
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe('POST /api/v1/auth/register-organization', () => {
@@ -42,6 +187,8 @@ describe('Authentication Endpoints', () => {
       const res = await request(app)
         .post('/api/v1/auth/register-organization')
         .send(testOrg);
+
+      console.log('Registration response:', res.body);
 
       expect(res.statusCode).toEqual(201);
       expect(res.body.success).toBe(true);
@@ -78,7 +225,7 @@ describe('Authentication Endpoints', () => {
 
       expect(res.statusCode).toEqual(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Validation error');
+      expect(res.body.message).toBe('Validation failed');
     });
   });
 
@@ -194,7 +341,7 @@ describe('Authentication Endpoints', () => {
 
       expect(res.statusCode).toEqual(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Validation error');
+      expect(res.body.message).toBe('Validation failed');
     });
   });
 

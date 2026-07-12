@@ -48,6 +48,7 @@ const generateTokenPair = async (employee) => {
 
 const registerOrganization = async ({ orgName, orgCode, name, email, password }) => {
   const existingOrg = await organizationRepo.findByCode(orgCode);
+  console.log('existingOrg:', existingOrg);
   if (existingOrg) {
     throw new AppError('Organization with this code already exists', 409);
   }
@@ -93,6 +94,34 @@ const registerAdmin = async ({ name, email, password, organizationCode }) => {
     email,
     password: hashedPw,
     role: 'ORG_ADMIN',
+    organizationId: org.id,
+  });
+
+  const tokens = await generateTokenPair(employee);
+
+  return {
+    employee: { id: employee.id, name: employee.name, email: employee.email, role: employee.role, organizationId: employee.organizationId },
+    ...tokens,
+  };
+};
+
+const registerEmployee = async ({ name, email, password, organizationCode }) => {
+  const org = await organizationRepo.findByCode(organizationCode);
+  if (!org) {
+    throw new AppError('Organization not found', 404);
+  }
+
+  const existingEmployee = await employeeRepo.findByEmail(email);
+  if (existingEmployee) {
+    throw new AppError('Email already registered', 409);
+  }
+
+  const hashedPw = await hashPassword(password);
+  const employee = await employeeRepo.create({
+    name,
+    email,
+    password: hashedPw,
+    role: 'EMPLOYEE',
     organizationId: org.id,
   });
 
@@ -231,6 +260,7 @@ const verifyEmail = async ({ token }) => {
 module.exports = {
   registerOrganization,
   registerAdmin,
+  registerEmployee,
   login,
   refreshToken,
   logout,
