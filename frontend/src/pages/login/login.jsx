@@ -141,7 +141,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="auth-divider">
+<div className="auth-divider">
           <span>New here?</span>
         </div>
 
@@ -149,8 +149,14 @@ export default function LoginPage() {
           Sign up creates an employee account. Admin roles are assigned later.
         </div>
 
-        <Link to="/signup" className="auth-btn auth-btn--outline auth-btn--link">
-          Create Account
+        <Link to="/register-org" className="auth-btn auth-btn--outline auth-btn--link">
+          Create Organization
+        </Link>
+        <Link to="/signup" className="auth-btn auth-btn--outline auth-btn--link" style={{ marginTop: '8px' }}>
+          Join as Employee
+        </Link>
+        <Link to="/signup" className="auth-btn auth-btn--outline auth-btn--link" style={{ marginTop: '8px' }}>
+          Join as Employee
         </Link>
       </div>
     </div>

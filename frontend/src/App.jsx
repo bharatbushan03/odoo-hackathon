@@ -3,6 +3,7 @@ import ProtectedRoute from './components/auth/protected-route.jsx';
 import AppLayout from './components/layout/app-layout.jsx';
 import LoginPage from './pages/login/login.jsx';
 import SignupPage from './pages/signup/signup.jsx';
+import OrgRegisterPage from './pages/org-register/org-register.jsx';
 import DashboardPage from './pages/dashboard/dashboard.jsx';
 import OrganizationSetup from './pages/organization-setup/organization-setup.jsx';
 import AssetsPage from './pages/assets/assets.jsx';
@@ -18,6 +19,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/register-org" element={<OrgRegisterPage />} />
 
       <Route
         element={
