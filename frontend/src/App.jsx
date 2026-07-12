@@ -1,13 +1,37 @@
-import Login from './pages/Login';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import ProtectedRoute from './components/auth/protected-route.jsx';
+import AppHeader from './components/layout/app-header.jsx';
+import LoginPage from './pages/login/login.jsx';
+import SignupPage from './pages/signup/signup.jsx';
+import OrganizationSetup from './pages/organization-setup/organization-setup.jsx';
 import './app-shell.css';
+
+function AppLayout() {
+  return (
+    <div className="app-shell">
+      <AppHeader />
+      <main className="app-main">
+        <OrganizationSetup />
+      </main>
+    </div>
+  );
+}
 
 function App() {
   return (
-    <div className="app-shell">
-      <main className="app-main">
-        <Login />
-      </main>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react';
+import PromoteEmployeeModal from '../../components/ui/promote-employee-modal.jsx';
 import './organization-setup.css';
+
+const ELEVATED_ROLE_LABELS = {
+  'department-head': 'Department Head',
+  'asset-manager': 'Asset Manager',
+};
 
 const TABS = [
   { id: 'departments', label: 'Departments' },
@@ -199,7 +205,7 @@ function AssetCategoryCard({ item }) {
   );
 }
 
-function EmployeeCard({ item }) {
+function EmployeeCard({ item, onPromote }) {
   return (
     <article className="organization-setup__card">
       <div className="organization-setup__card-header">
@@ -222,11 +228,21 @@ function EmployeeCard({ item }) {
           <span>{item.email}</span>
         </div>
       </div>
+      <div className="organization-setup__card-actions">
+        <button
+          type="button"
+          className="organization-setup__promote-btn"
+          onClick={() => onPromote(item)}
+          aria-label={`Promote ${item.name}`}
+        >
+          Promote
+        </button>
+      </div>
     </article>
   );
 }
 
-function TabContent({ tabId, items }) {
+function TabContent({ tabId, items, onPromoteEmployee }) {
   if (items.length === 0) {
     return (
       <div className="organization-setup__empty">
@@ -236,18 +252,24 @@ function TabContent({ tabId, items }) {
     );
   }
 
-  const CardComponent =
-    tabId === 'departments'
-      ? DepartmentCard
-      : tabId === 'assetCategories'
-        ? AssetCategoryCard
-        : EmployeeCard;
+  if (tabId === 'employeeDirectory') {
+    return items.map((item) => (
+      <EmployeeCard key={item.id} item={item} onPromote={onPromoteEmployee} />
+    ));
+  }
 
+  const CardComponent = tabId === 'departments' ? DepartmentCard : AssetCategoryCard;
   return items.map((item) => <CardComponent key={item.id} item={item} />);
 }
 
 export default function OrganizationSetup() {
   const [activeTab, setActiveTab] = useState('departments');
+  const [employees, setEmployees] = useState(INITIAL_DATA.employeeDirectory);
+  const [promoteModal, setPromoteModal] = useState({
+    isOpen: false,
+    employee: null,
+    newRole: '',
+  });
   const [tabState, setTabState] = useState({
     departments: createInitialTabState(),
     assetCategories: createInitialTabState(),
@@ -256,9 +278,17 @@ export default function OrganizationSetup() {
 
   const currentState = tabState[activeTab];
 
+  const activeData = useMemo(
+    () => ({
+      ...INITIAL_DATA,
+      employeeDirectory: employees,
+    }),
+    [employees],
+  );
+
   const filteredItems = useMemo(
-    () => filterItems(INITIAL_DATA[activeTab], activeTab, currentState.search, currentState.filter),
-    [activeTab, currentState.search, currentState.filter],
+    () => filterItems(activeData[activeTab], activeTab, currentState.search, currentState.filter),
+    [activeTab, activeData, currentState.search, currentState.filter],
   );
 
   const updateTabState = (tabId, updates) => {
@@ -274,6 +304,28 @@ export default function OrganizationSetup() {
       ...prev,
       [tabId]: { ...prev[tabId], filterOpen: false },
     }));
+  };
+
+  const openPromoteModal = (employee) => {
+    setPromoteModal({ isOpen: true, employee, newRole: '' });
+  };
+
+  const closePromoteModal = () => {
+    setPromoteModal({ isOpen: false, employee: null, newRole: '' });
+  };
+
+  const handleConfirmPromotion = (roleValue) => {
+    const roleLabel = ELEVATED_ROLE_LABELS[roleValue];
+    if (!promoteModal.employee || !roleLabel) return;
+
+    setEmployees((prev) =>
+      prev.map((employee) =>
+        employee.id === promoteModal.employee.id
+          ? { ...employee, role: roleLabel }
+          : employee,
+      ),
+    );
+    closePromoteModal();
   };
 
   return (
@@ -369,13 +421,29 @@ export default function OrganizationSetup() {
         </div>
 
         <p className="organization-setup__results-count">
-          Showing {filteredItems.length} of {INITIAL_DATA[activeTab].length} records
+          Showing {filteredItems.length} of {activeData[activeTab].length} records
         </p>
 
         <div className="organization-setup__grid">
-          <TabContent tabId={activeTab} items={filteredItems} />
+          <TabContent
+            tabId={activeTab}
+            items={filteredItems}
+            onPromoteEmployee={openPromoteModal}
+          />
         </div>
       </div>
+
+      <PromoteEmployeeModal
+        isOpen={promoteModal.isOpen}
+        employee={promoteModal.employee}
+        currentRole={promoteModal.employee?.role ?? ''}
+        newRole={promoteModal.newRole}
+        onNewRoleChange={(value) =>
+          setPromoteModal((prev) => ({ ...prev, newRole: value }))
+        }
+        onClose={closePromoteModal}
+        onConfirm={handleConfirmPromotion}
+      />
     </div>
   );
 }
