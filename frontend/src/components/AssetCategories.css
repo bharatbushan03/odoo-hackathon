@@ -1,0 +1,379 @@
+/* Asset Categories Component Styles */
+.asset-categories-page {
+  padding: 24px;
+  background-color: var(--bg);
+  min-height: 100vh;
+}
+
+.asset-categories-header {
+  margin-bottom: 24px;
+}
+
+.asset-categories-header h1 {
+  margin: 0 0 16px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.toolbar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-bottom: 24px;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.search-input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 200px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(170, 59, 255, 0.2);
+}
+
+.filter-select,
+.sort-select {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 120px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.filter-select:focus,
+.sort-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(170, 59, 255, 0.2);
+}
+
+.add-button {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.add-button:hover {
+  background-color: #9b2ecf;
+}
+
+.add-button:active {
+  transform: scale(0.98);
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.category-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card-content {
+  padding: 24px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent-bg) 0%, var(--accent) 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.category-name {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.category-description {
+  margin: 0 0 20px 0;
+  color: var(--text);
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.category-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.stat-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.status-item .stat-value {
+  text-transform: capitalize;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+  margin-left: 8px;
+}
+
+.status-pill.active {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.inactive {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-pill.archived {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.action-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.action-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+.edit-btn {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.edit-btn:hover {
+  background-color: #bfdbfe;
+}
+
+.archive-btn {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.archive-btn:hover {
+  background-color: #fde68a;
+}
+
+.delete-btn {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.delete-btn:hover {
+  background-color: #fecaca;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.empty-state-icon {
+  margin-bottom: 24px;
+}
+
+.empty-state-icon .illustration {
+  font-size: 64px;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.empty-state h2 {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.empty-state p {
+  margin: 0 0 24px 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.empty-state-button {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.empty-state-button:hover {
+  background-color: #9b2ecf;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .asset-categories-page {
+    padding: 16px;
+  }
+
+  .asset-categories-header h1 {
+    font-size: 24px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input,
+  .filter-select,
+  .sort-select,
+  .add-button {
+    width: 100%;
+  }
+
+  .categories-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .asset-categories-header h1 {
+    font-size: 20px;
+  }
+
+  .category-icon {
+    font-size: 36px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .category-name {
+    font-size: 18px;
+  }
+
+  .category-description {
+    font-size: 14px;
+  }
+
+  .category-stats {
+    gap: 12px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .action-button {
+    width: 100%;
+  }
+}
