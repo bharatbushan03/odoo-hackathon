@@ -1,8 +1,8 @@
 const express = require('express');
 const org = require('../controllers/orgController');
-const { authenticate, requireRoles } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
-const admin = [authenticate, requireRoles('ADMIN')];
+const admin = [authenticate, authorize('ADMIN')];
 const router = express.Router();
 
 router.post('/departments', ...admin, org.createDepartment);

@@ -1,11 +1,11 @@
 const express = require('express');
 const departmentController = require('../controllers/departmentController');
-const { authenticate, requireRoles } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Admin-only routes
-const admin = [authenticate, requireRoles('ADMIN')];
+const admin = [authenticate, authorize('ADMIN')];
 
 // Basic CRUD operations
 router.post('/departments', ...admin, departmentController.createDepartment);

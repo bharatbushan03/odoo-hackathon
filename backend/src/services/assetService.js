@@ -90,7 +90,7 @@ async function findWithPagination(where, options) {
   ]);
 
   return {
-    assets.map(formatAssetList),
+    assets: assets.map(formatAssetList),
     meta: {
       total,
       page: Math.floor(skip / take) + 1,
@@ -267,7 +267,7 @@ async function getStats() {
 
 async function addAttachment(assetId, attachmentData) {
   const attachment = await prisma.assetAttachment.create({
-    {
+    data: {
       assetId,
       ...attachmentData
     }

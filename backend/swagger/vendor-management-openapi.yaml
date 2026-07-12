@@ -1,0 +1,2615 @@
+openapi: 3.0.3
+info:
+  title: Vendor Management API
+  description: |
+    Comprehensive Vendor Management API for managing vendors, contacts, purchase orders, and warranties.
+    
+    ## Features
+    - Vendor CRUD operations with rating system
+    - Vendor contacts management with primary contact designation
+    - Purchase order tracking with line items
+    - Warranty management with expiration tracking
+    - Advanced search, filtering, and pagination
+    - Vendor performance statistics
+    
+    ## Authentication
+    All endpoints require JWT authentication. Admin and Asset Manager roles are required for create/update/delete operations.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development server
+  - url: https://api.example.com/api
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Vendors
+    description: Vendor management operations
+  - name: Vendor Contacts
+    description: Vendor contact management
+  - name: Purchase Orders
+    description: Purchase order management
+  - name: Warranties
+    description: Warranty management
+
+paths:
+  /vendors:
+    post:
+      tags:
+        - Vendors
+      summary: Create a new vendor
+      description: Create a new vendor with contact information and business details
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorCreate'
+            examples:
+              basic:
+                summary: Basic vendor creation
+                value:
+                  organizationId: "550e8400-e29b-41d4-a716-446655440000"
+                  name: "Tech Supplies Inc."
+                  code: "TECH001"
+                  email: "info@techsupplies.com"
+                  phone: "+1-555-0123"
+              full:
+                summary: Complete vendor creation
+                value:
+                  organizationId: "550e8400-e29b-41d4-a716-446655440000"
+                  name: "Tech Supplies Inc."
+                  code: "TECH001"
+                  contactPerson: "John Smith"
+                  email: "john@techsupplies.com"
+                  phone: "+1-555-0123"
+                  address: "123 Business Street"
+                  city: "San Francisco"
+                  state: "CA"
+                  country: "USA"
+                  zipCode: "94102"
+                  taxId: "123456789"
+                  paymentTerms: "Net 30"
+                  isPreferred: false
+                  isActive: true
+                  rating: 4.5
+                  status: "ACTIVE"
+                  notes: "Primary supplier for computer equipment"
+                  website: "https://techsupplies.com"
+                  creditLimit: 50000.00
+                  currency: "USD"
+      responses:
+        '201':
+          description: Vendor created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+              examples:
+                success:
+                  summary: Successful vendor creation
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440001"
+                    organizationId: "550e8400-e29b-41d4-a716-446655440000"
+                    name: "Tech Supplies Inc."
+                    code: "TECH001"
+                    contactPerson: "John Smith"
+                    email: "john@techsupplies.com"
+                    phone: "+1-555-0123"
+                    address: "123 Business Street"
+                    city: "San Francisco"
+                    state: "CA"
+                    country: "USA"
+                    zipCode: "94102"
+                    taxId: "123456789"
+                    paymentTerms: "Net 30"
+                    isPreferred: false
+                    isActive: true
+                    rating: 4.5
+                    status: "ACTIVE"
+                    notes: "Primary supplier for computer equipment"
+                    website: "https://techsupplies.com"
+                    creditLimit: 50000.00
+                    currency: "USD"
+                    createdAt: "2024-01-01T00:00:00.000Z"
+                    updatedAt: "2024-01-01T00:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - Vendors
+      summary: List all vendors
+      description: Get paginated list of vendors with filtering, search, and sorting
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/VendorStatus'
+        - $ref: '#/components/parameters/IsActive'
+        - $ref: '#/components/parameters/IsPreferred'
+        - $ref: '#/components/parameters/VendorSortBy'
+        - $ref: '#/components/parameters/SortOrder'
+        - $ref: '#/components/parameters/IncludeContacts'
+        - $ref: '#/components/parameters/IncludePurchaseOrders'
+        - $ref: '#/components/parameters/IncludeWarranties'
+      responses:
+        '200':
+          description: List of vendors retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorListResponse'
+              examples:
+                basic:
+                  summary: Basic vendor list
+                  value:
+                    data:
+                      - id: "550e8400-e29b-41d4-a716-446655440001"
+                        name: "Tech Supplies Inc."
+                        code: "TECH001"
+                        contactPerson: "John Smith"
+                        email: "john@techsupplies.com"
+                        phone: "+1-555-0123"
+                        rating: 4.5
+                        status: "ACTIVE"
+                        isPreferred: true
+                        isActive: true
+                        createdAt: "2024-01-01T00:00:00.000Z"
+                        updatedAt: "2024-01-01T00:00:00.000Z"
+                    meta:
+                      total: 50
+                      page: 1
+                      limit: 10
+                      totalPages: 5
+                withContacts:
+                  summary: Vendor list with contacts
+                  value:
+                    data:
+                      - id: "550e8400-e29b-41d4-a716-446655440001"
+                        name: "Tech Supplies Inc."
+                        code: "TECH001"
+                        rating: 4.5
+                        status: "ACTIVE"
+                        contacts:
+                          - id: "contact-uuid"
+                            name: "John Smith"
+                            email: "john@techsupplies.com"
+                            phone: "+1-555-0123"
+                            position: "Sales Manager"
+                            isPrimary: true
+                    meta:
+                      total: 10
+                      page: 1
+                      limit: 10
+                      totalPages: 1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendors/search:
+    get:
+      tags:
+        - Vendors
+      summary: Search vendors
+      description: Search vendors by name, code, email, or contact person
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+          example: "tech"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/VendorSortBy'
+        - $ref: '#/components/parameters/SortOrder'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorListResponse'
+              examples:
+                success:
+                  summary: Search results
+                  value:
+                    data:
+                      - id: "550e8400-e29b-41d4-a716-446655440001"
+                        name: "Tech Supplies Inc."
+                        code: "TECH001"
+                        rating: 4.5
+                        status: "ACTIVE"
+                    meta:
+                      total: 3
+                      page: 1
+                      limit: 10
+                      totalPages: 1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendors/preferred:
+    get:
+      tags:
+        - Vendors
+      summary: Get preferred vendors
+      description: Get all preferred vendors for the organization, sorted by rating
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of preferred vendors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vendor'
+              examples:
+                success:
+                  summary: Preferred vendors list
+                  value:
+                    - id: "550e8400-e29b-41d4-a716-446655440001"
+                      name: "Tech Supplies Inc."
+                      code: "TECH001"
+                      rating: 4.8
+                      isPreferred: true
+                      status: "ACTIVE"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendors/{id}:
+    get:
+      tags:
+        - Vendors
+      summary: Get vendor by ID
+      description: Get a specific vendor by ID with full details
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VendorId'
+      responses:
+        '200':
+          description: Vendor details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+              examples:
+                success:
+                  summary: Vendor details
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440001"
+                    name: "Tech Supplies Inc."
+                    code: "TECH001"
+                    contactPerson: "John Smith"
+                    email: "john@techsupplies.com"
+                    phone: "+1-555-0123"
+                    address: "123 Business Street"
+                    city: "San Francisco"
+                    state: "CA"
+                    country: "USA"
+                    zipCode: "94102"
+                    taxId: "123456789"
+                    paymentTerms: "Net 30"
+                    isPreferred: true
+                    isActive: true
+                    rating: 4.5
+                    status: "ACTIVE"
+                    notes: "Primary supplier for computer equipment"
+                    website: "https://techsupplies.com"
+                    creditLimit: 50000.00
+                    currency: "USD"
+                    createdAt: "2024-01-01T00:00:00.000Z"
+                    updatedAt: "2024-01-01T00:00:00.000Z"
+                    contacts:
+                      - id: "contact-uuid"
+                        name: "John Smith"
+                        email: "john@techsupplies.com"
+                        phone: "+1-555-0123"
+                        position: "Sales Manager"
+                        isPrimary: true
+                        notes: "Primary contact for all orders"
+                    purchaseOrders: []
+                    warranties: []
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - Vendors
+      summary: Update vendor
+      description: Update vendor details
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VendorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorUpdate'
+            examples:
+              basic:
+                summary: Basic vendor update
+                value:
+                  name: "Tech Supplies Inc. (Updated)"
+                  contactPerson: "Jane Doe"
+                  email: "jane@techsupplies.com"
+                  rating: 4.8
+              full:
+                summary: Complete vendor update
+                value:
+                  name: "Tech Supplies Inc. (Updated)"
+                  contactPerson: "Jane Doe"
+                  email: "jane@techsupplies.com"
+                  phone: "+1-555-0124"
+                  address: "456 Business Avenue"
+                  city: "Los Angeles"
+                  state: "CA"
+                  country: "USA"
+                  zipCode: "90001"
+                  paymentTerms: "Net 45"
+                  isPreferred: true
+                  rating: 4.8
+                  status: "ACTIVE"
+                  notes: "Updated contact information"
+                  website: "https://techsupplies.com"
+                  creditLimit: 75000.00
+                  currency: "USD"
+      responses:
+        '200':
+          description: Vendor updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+              examples:
+                success:
+                  summary: Updated vendor
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440001"
+                    name: "Tech Supplies Inc. (Updated)"
+                    code: "TECH001"
+                    contactPerson: "Jane Doe"
+                    email: "jane@techsupplies.com"
+                    rating: 4.8
+                    isPreferred: true
+                    status: "ACTIVE"
+                    updatedAt: "2024-01-02T00:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - Vendors
+      summary: Delete vendor
+      description: Delete a vendor (only if no purchase orders, warranties, or assets are linked)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VendorId'
+      responses:
+        '204':
+          description: Vendor deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot delete vendor due to existing relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+              examples:
+                hasRelationships:
+                  summary: Vendor has existing relationships
+                  value:
+                    message: "Cannot delete vendor"
+                    blockers:
+                      purchaseOrders: 5
+                      warranties: 3
+                      assets: 10
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendors/{id}/statistics:
+    get:
+      tags:
+        - Vendors
+      summary: Get vendor statistics
+      description: Get detailed statistics for a vendor including purchase history and warranty information
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VendorId'
+      responses:
+        '200':
+          description: Vendor statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorStatistics'
+              examples:
+                success:
+                  summary: Vendor statistics
+                  value:
+                    vendorId: "550e8400-e29b-41d4-a716-446655440001"
+                    purchaseOrders:
+                      total: 25
+                      totalAmount: 125000.00
+                    warranties:
+                      total: 15
+                      active: 12
+                    assets: 50
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendors/{id}/rating:
+    put:
+      tags:
+        - Vendors
+      summary: Update vendor rating
+      description: Update the vendor's rating (0-5 scale)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VendorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+              properties:
+                rating:
+                  type: number
+                  minimum: 0
+                  maximum: 5
+                  description: Vendor rating (0-5)
+                  example: 4.8
+            examples:
+              success:
+                summary: Update rating
+                value:
+                  rating: 4.8
+      responses:
+        '200':
+          description: Rating updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+              examples:
+                success:
+                  summary: Updated vendor
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440001"
+                    name: "Tech Supplies Inc."
+                    rating: 4.8
+                    updatedAt: "2024-01-02T00:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendors/{vendorId}/contacts:
+    post:
+      tags:
+        - Vendor Contacts
+      summary: Create vendor contact
+      description: Add a new contact to a vendor
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VendorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorContactCreate'
+            examples:
+              basic:
+                summary: Basic contact creation
+                value:
+                  name: "John Smith"
+                  email: "john@techsupplies.com"
+                  phone: "+1-555-0123"
+              full:
+                summary: Complete contact creation
+                value:
+                  name: "John Smith"
+                  email: "john@techsupplies.com"
+                  phone: "+1-555-0123"
+                  position: "Sales Manager"
+                  isPrimary: true
+                  notes: "Primary contact for all orders"
+      responses:
+        '201':
+          description: Contact created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorContact'
+              examples:
+                success:
+                  summary: Created contact
+                  value:
+                    id: "contact-uuid"
+                    vendorId: "vendor-uuid"
+                    name: "John Smith"
+                    email: "john@techsupplies.com"
+                    phone: "+1-555-0123"
+                    position: "Sales Manager"
+                    isPrimary: true
+                    notes: "Primary contact for all orders"
+                    createdAt: "2024-01-01T00:00:00.000Z"
+                    updatedAt: "2024-01-01T00:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - Vendor Contacts
+      summary: Get vendor contacts
+      description: Get all contacts for a specific vendor
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VendorId'
+      responses:
+        '200':
+          description: List of vendor contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VendorContact'
+              examples:
+                success:
+                  summary: Vendor contacts list
+                  value:
+                    - id: "contact-uuid"
+                      name: "John Smith"
+                      email: "john@techsupplies.com"
+                      phone: "+1-555-0123"
+                      position: "Sales Manager"
+                      isPrimary: true
+                      notes: "Primary contact for all orders"
+                    - id: "contact-uuid-2"
+                      name: "Jane Doe"
+                      email: "jane@techsupplies.com"
+                      phone: "+1-555-0124"
+                      position: "Account Manager"
+                      isPrimary: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendor-contacts/{id}:
+    get:
+      tags:
+        - Vendor Contacts
+      summary: Get vendor contact by ID
+      description: Get a specific vendor contact by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Contact ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Contact details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorContact'
+              examples:
+                success:
+                  summary: Contact details
+                  value:
+                    id: "contact-uuid"
+                    vendorId: "vendor-uuid"
+                    name: "John Smith"
+                    email: "john@techsupplies.com"
+                    phone: "+1-555-0123"
+                    position: "Sales Manager"
+                    isPrimary: true
+                    notes: "Primary contact for all orders"
+                    vendor:
+                      id: "vendor-uuid"
+                      name: "Tech Supplies Inc."
+                      code: "TECH001"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - Vendor Contacts
+      summary: Update vendor contact
+      description: Update vendor contact details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Contact ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorContactUpdate'
+            examples:
+              basic:
+                summary: Basic contact update
+                value:
+                  name: "John Smith Jr."
+                  email: "john.jr@techsupplies.com"
+              full:
+                summary: Complete contact update
+                value:
+                  name: "John Smith Jr."
+                  email: "john.jr@techsupplies.com"
+                  phone: "+1-555-0125"
+                  position: "Senior Sales Manager"
+                  isPrimary: true
+                  notes: "Updated contact information"
+      responses:
+        '200':
+          description: Contact updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorContact'
+              examples:
+                success:
+                  summary: Updated contact
+                  value:
+                    id: "contact-uuid"
+                    name: "John Smith Jr."
+                    email: "john.jr@techsupplies.com"
+                    position: "Senior Sales Manager"
+                    isPrimary: true
+                    updatedAt: "2024-01-02T00:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - Vendor Contacts
+      summary: Delete vendor contact
+      description: Delete a vendor contact
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Contact ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Contact deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendor-contacts/{id}/primary:
+    put:
+      tags:
+        - Vendor Contacts
+      summary: Set primary contact
+      description: Set a contact as the primary contact for the vendor (automatically removes primary status from other contacts)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Contact ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Contact set as primary successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorContact'
+              examples:
+                success:
+                  summary: Primary contact set
+                  value:
+                    id: "contact-uuid"
+                    name: "John Smith"
+                    isPrimary: true
+                    updatedAt: "2024-01-02T00:00:00.000Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /purchase-orders:
+    post:
+      tags:
+        - Purchase Orders
+      summary: Create purchase order
+      description: Create a new purchase order with items
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrderCreate'
+            examples:
+              basic:
+                summary: Basic purchase order
+                value:
+                  orderNumber: "PO-2024-001"
+                  vendorId: "vendor-uuid"
+                  orderDate: "2024-01-01T00:00:00.000Z"
+                  totalAmount: 15000.00
+                  items:
+                    - description: "Laptop Computer"
+                      quantity: 10
+                      unitPrice: 1200.00
+                      totalPrice: 12000.00
+              full:
+                summary: Complete purchase order
+                value:
+                  orderNumber: "PO-2024-001"
+                  vendorId: "vendor-uuid"
+                  orderDate: "2024-01-01T00:00:00.000Z"
+                  expectedDate: "2024-01-15T00:00:00.000Z"
+                  status: "PENDING"
+                  totalAmount: 15000.00
+                  currency: "USD"
+                  notes: "Urgent order for new equipment"
+                  internalNotes: "Approved by management"
+                  items:
+                    - assetId: "asset-uuid"
+                      description: "Laptop Computer"
+                      quantity: 10
+                      unitPrice: 1200.00
+                      totalPrice: 12000.00
+                    - description: "Computer Monitor"
+                      quantity: 5
+                      unitPrice: 600.00
+                      totalPrice: 3000.00
+      responses:
+        '201':
+          description: Purchase order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+              examples:
+                success:
+                  summary: Created purchase order
+                  value:
+                    id: "po-uuid"
+                    orderNumber: "PO-2024-001"
+                    vendorId: "vendor-uuid"
+                    orderDate: "2024-01-01T00:00:00.000Z"
+                    expectedDate: "2024-01-15T00:00:00.000Z"
+                    status: "PENDING"
+                    totalAmount: 15000.00
+                    currency: "USD"
+                    notes: "Urgent order for new equipment"
+                    internalNotes: "Approved by management"
+                    createdAt: "2024-01-01T00:00:00.000Z"
+                    updatedAt: "2024-01-01T00:00:00.000Z"
+                    vendor:
+                      id: "vendor-uuid"
+                      name: "Tech Supplies Inc."
+                      code: "TECH001"
+                    items:
+                      - id: "item-uuid"
+                        description: "Laptop Computer"
+                        quantity: 10
+                        unitPrice: 1200.00
+                        totalPrice: 12000.00
+                        receivedQuantity: 0
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - Purchase Orders
+      summary: List purchase orders
+      description: Get paginated list of purchase orders with filtering
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: vendorId
+          in: query
+          description: Filter by vendor ID
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            $ref: '#/components/schemas/PurchaseOrderStatus'
+        - name: startDate
+          in: query
+          description: Filter orders from this date
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: Filter orders until this date
+          schema:
+            type: string
+            format: date-time
+        - name: sortBy
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [orderDate, totalAmount, status]
+            default: orderDate
+        - $ref: '#/components/parameters/SortOrder'
+      responses:
+        '200':
+          description: List of purchase orders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderListResponse'
+              examples:
+                success:
+                  summary: Purchase orders list
+                  value:
+                    data:
+                      - id: "po-uuid"
+                        orderNumber: "PO-2024-001"
+                        vendorId: "vendor-uuid"
+                        orderDate: "2024-01-01T00:00:00.000Z"
+                        status: "RECEIVED"
+                        totalAmount: 15000.00
+                        vendor:
+                          id: "vendor-uuid"
+                          name: "Tech Supplies Inc."
+                        items: []
+                    meta:
+                      total: 100
+                      page: 1
+                      limit: 10
+                      totalPages: 10
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /purchase-orders/{id}:
+    get:
+      tags:
+        - Purchase Orders
+      summary: Get purchase order by ID
+      description: Get a specific purchase order with full details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Purchase order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+              examples:
+                success:
+                  summary: Purchase order details
+                  value:
+                    id: "po-uuid"
+                    orderNumber: "PO-2024-001"
+                    vendorId: "vendor-uuid"
+                    orderDate: "2024-01-01T00:00:00.000Z"
+                    expectedDate: "2024-01-15T00:00:00.000Z"
+                    receivedDate: "2024-01-14T00:00:00.000Z"
+                    status: "RECEIVED"
+                    totalAmount: 15000.00
+                    currency: "USD"
+                    notes: "Urgent order for new equipment"
+                    internalNotes: "Approved by management"
+                    createdAt: "2024-01-01T00:00:00.000Z"
+                    updatedAt: "2024-01-14T00:00:00.000Z"
+                    vendor:
+                      id: "vendor-uuid"
+                      name: "Tech Supplies Inc."
+                      code: "TECH001"
+                      email: "john@techsupplies.com"
+                    items:
+                      - id: "item-uuid"
+                        assetId: "asset-uuid"
+                        description: "Laptop Computer"
+                        quantity: 10
+                        unitPrice: 1200.00
+                        totalPrice: 12000.00
+                        receivedQuantity: 10
+                        asset:
+                          id: "asset-uuid"
+                          name: "Laptop Computer"
+                          assetTag: "LAPTOP001"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - Purchase Orders
+      summary: Update purchase order
+      description: Update purchase order details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrderUpdate'
+            examples:
+              basic:
+                summary: Basic update
+                value:
+                  status: "RECEIVED"
+                  receivedDate: "2024-01-14T00:00:00.000Z"
+                  notes: "Order received in good condition"
+              full:
+                summary: Complete update
+                value:
+                  status: "RECEIVED"
+                  receivedDate: "2024-01-14T00:00:00.000Z"
+                  expectedDate: "2024-01-15T00:00:00.000Z"
+                  totalAmount: 15500.00
+                  notes: "Order received with minor adjustments"
+                  internalNotes: "Updated totals"
+      responses:
+        '200':
+          description: Purchase order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+              examples:
+                success:
+                  summary: Updated purchase order
+                  value:
+                    id: "po-uuid"
+                    status: "RECEIVED"
+                    receivedDate: "2024-01-14T00:00:00.000Z"
+                    notes: "Order received in good condition"
+                    updatedAt: "2024-01-14T00:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - Purchase Orders
+      summary: Delete purchase order
+      description: Delete a purchase order
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Purchase order deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /warranties:
+    post:
+      tags:
+        - Warranties
+      summary: Create warranty
+      description: Create a new warranty for an asset
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WarrantyCreate'
+            examples:
+              basic:
+                summary: Basic warranty
+                value:
+                  vendorId: "vendor-uuid"
+                  assetId: "asset-uuid"
+                  startDate: "2024-01-01T00:00:00.000Z"
+                  endDate: "2026-01-01T00:00:00.000Z"
+                  type: "STANDARD"
+              full:
+                summary: Complete warranty
+                value:
+                  vendorId: "vendor-uuid"
+                  assetId: "asset-uuid"
+                  warrantyNumber: "WARRANTY-12345"
+                  startDate: "2024-01-01T00:00:00.000Z"
+                  endDate: "2026-01-01T00:00:00.000Z"
+                  type: "STANDARD"
+                  coverage: "Hardware and labor"
+                  terms: "2-year manufacturer warranty"
+                  status: "ACTIVE"
+                  notes: "Extended warranty purchased"
+      responses:
+        '201':
+          description: Warranty created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warranty'
+              examples:
+                success:
+                  summary: Created warranty
+                  value:
+                    id: "warranty-uuid"
+                    vendorId: "vendor-uuid"
+                    assetId: "asset-uuid"
+                    warrantyNumber: "WARRANTY-12345"
+                    startDate: "2024-01-01T00:00:00.000Z"
+                    endDate: "2026-01-01T00:00:00.000Z"
+                    type: "STANDARD"
+                    coverage: "Hardware and labor"
+                    terms: "2-year manufacturer warranty"
+                    status: "ACTIVE"
+                    notes: "Extended warranty purchased"
+                    createdAt: "2024-01-01T00:00:00.000Z"
+                    updatedAt: "2024-01-01T00:00:00.000Z"
+                    vendor:
+                      id: "vendor-uuid"
+                      name: "Tech Supplies Inc."
+                      code: "TECH001"
+                    asset:
+                      id: "asset-uuid"
+                      name: "Laptop Computer"
+                      assetTag: "LAPTOP001"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - Warranties
+      summary: List warranties
+      description: Get paginated list of warranties with filtering
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: vendorId
+          in: query
+          description: Filter by vendor ID
+          schema:
+            type: string
+            format: uuid
+        - name: assetId
+          in: query
+          description: Filter by asset ID
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            $ref: '#/components/schemas/WarrantyStatus'
+        - name: type
+          in: query
+          description: Filter by type
+          schema:
+            $ref: '#/components/schemas/WarrantyType'
+        - name: sortBy
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [startDate, endDate, type, status]
+            default: startDate
+        - $ref: '#/components/parameters/SortOrder'
+      responses:
+        '200':
+          description: List of warranties
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WarrantyListResponse'
+              examples:
+                success:
+                  summary: Warranties list
+                  value:
+                    data:
+                      - id: "warranty-uuid"
+                        vendorId: "vendor-uuid"
+                        assetId: "asset-uuid"
+                        warrantyNumber: "WARRANTY-12345"
+                        startDate: "2024-01-01T00:00:00.000Z"
+                        endDate: "2026-01-01T00:00:00.000Z"
+                        type: "STANDARD"
+                        status: "ACTIVE"
+                        vendor:
+                          id: "vendor-uuid"
+                          name: "Tech Supplies Inc."
+                        asset:
+                          id: "asset-uuid"
+                          name: "Laptop Computer"
+                    meta:
+                      total: 50
+                      page: 1
+                      limit: 10
+                      totalPages: 5
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /warranties/expiring:
+    get:
+      tags:
+        - Warranties
+      summary: Get expiring warranties
+      description: Get warranties that are expiring within a specified number of days
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          description: Number of days to look ahead
+          schema:
+            type: integer
+            default: 30
+            minimum: 1
+            maximum: 365
+          example: 30
+      responses:
+        '200':
+          description: List of expiring warranties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Warranty'
+              examples:
+                success:
+                  summary: Expiring warranties
+                  value:
+                    - id: "warranty-uuid"
+                      vendorId: "vendor-uuid"
+                      assetId: "asset-uuid"
+                      warrantyNumber: "WARRANTY-12345"
+                      startDate: "2024-01-01T00:00:00.000Z"
+                      endDate: "2024-01-25T00:00:00.000Z"
+                      type: "STANDARD"
+                      status: "ACTIVE"
+                      vendor:
+                        id: "vendor-uuid"
+                        name: "Tech Supplies Inc."
+                      asset:
+                        id: "asset-uuid"
+                        name: "Laptop Computer"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /warranties/{id}:
+    get:
+      tags:
+        - Warranties
+      summary: Get warranty by ID
+      description: Get a specific warranty with full details including claims
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Warranty ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Warranty details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warranty'
+              examples:
+                success:
+                  summary: Warranty details
+                  value:
+                    id: "warranty-uuid"
+                    vendorId: "vendor-uuid"
+                    assetId: "asset-uuid"
+                    warrantyNumber: "WARRANTY-12345"
+                    startDate: "2024-01-01T00:00:00.000Z"
+                    endDate: "2026-01-01T00:00:00.000Z"
+                    type: "STANDARD"
+                    coverage: "Hardware and labor"
+                    terms: "2-year manufacturer warranty"
+                    status: "ACTIVE"
+                    notes: "Extended warranty purchased"
+                    createdAt: "2024-01-01T00:00:00.000Z"
+                    updatedAt: "2024-01-01T00:00:00.000Z"
+                    vendor:
+                      id: "vendor-uuid"
+                      name: "Tech Supplies Inc."
+                      code: "TECH001"
+                      email: "john@techsupplies.com"
+                    asset:
+                      id: "asset-uuid"
+                      name: "Laptop Computer"
+                      assetTag: "LAPTOP001"
+                    claims: []
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - Warranties
+      summary: Update warranty
+      description: Update warranty details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Warranty ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WarrantyUpdate'
+            examples:
+              basic:
+                summary: Basic update
+                value:
+                  status: "CLAIMED"
+                  notes: "Warranty claim submitted"
+              full:
+                summary: Complete update
+                value:
+                  status: "CLAIMED"
+                  endDate: "2026-01-01T00:00:00.000Z"
+                  coverage: "Updated coverage details"
+                  terms: "Updated warranty terms"
+                  notes: "Warranty claim submitted"
+      responses:
+        '200':
+          description: Warranty updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warranty'
+              examples:
+                success:
+                  summary: Updated warranty
+                  value:
+                    id: "warranty-uuid"
+                    status: "CLAIMED"
+                    endDate: "2026-01-01T00:00:00.000Z"
+                    notes: "Warranty claim submitted"
+                    updatedAt: "2024-01-02T00:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - Warranties
+      summary: Delete warranty
+      description: Delete a warranty
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Warranty ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Warranty deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /vendor-assets/{assetId}/warranties:
+    get:
+      tags:
+        - Warranties
+      summary: Get asset warranties
+      description: Get all active warranties for a specific asset
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          description: Asset ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of asset warranties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Warranty'
+              examples:
+                success:
+                  summary: Asset warranties
+                  value:
+                    - id: "warranty-uuid"
+                      vendorId: "vendor-uuid"
+                      assetId: "asset-uuid"
+                      warrantyNumber: "WARRANTY-12345"
+                      startDate: "2024-01-01T00:00:00.000Z"
+                      endDate: "2026-01-01T00:00:00.000Z"
+                      type: "STANDARD"
+                      status: "ACTIVE"
+                      vendor:
+                        id: "vendor-uuid"
+                        name: "Tech Supplies Inc."
+                      asset:
+                        id: "asset-uuid"
+                        name: "Laptop Computer"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token. Format: `Bearer <token>`
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page number
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+      example: 1
+
+    Limit:
+      name: limit
+      in: query
+      description: Items per page
+      schema:
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 100
+      example: 10
+
+    Search:
+      name: search
+      in: query
+      description: Search query
+      schema:
+        type: string
+      example: "tech"
+
+    VendorId:
+      name: id
+      in: path
+      required: true
+      description: Vendor ID
+      schema:
+        type: string
+        format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440001"
+
+    VendorStatus:
+      name: status
+      in: query
+      description: Filter by vendor status
+      schema:
+        type: string
+        enum: [ACTIVE, INACTIVE, BLOCKED, UNDER_REVIEW]
+      example: "ACTIVE"
+
+    IsActive:
+      name: isActive
+      in: query
+      description: Filter by active status
+      schema:
+        type: boolean
+      example: true
+
+    IsPreferred:
+      name: isPreferred
+      in: query
+      description: Filter by preferred status
+      schema:
+        type: boolean
+      example: true
+
+    VendorSortBy:
+      name: sortBy
+      in: query
+      description: Sort field for vendors
+      schema:
+        type: string
+        enum: [name, code, rating, createdAt, updatedAt]
+        default: name
+      example: "name"
+
+    SortOrder:
+      name: sortOrder
+      in: query
+      description: Sort order
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+      example: "asc"
+
+    IncludeContacts:
+      name: includeContacts
+      in: query
+      description: Include vendor contacts
+      schema:
+        type: boolean
+        default: false
+      example: true
+
+    IncludePurchaseOrders:
+      name: includePurchaseOrders
+      in: query
+      description: Include purchase orders
+      schema:
+        type: boolean
+        default: false
+      example: true
+
+    IncludeWarranties:
+      name: includeWarranties
+      in: query
+      description: Include warranties
+      schema:
+        type: boolean
+        default: false
+      example: true
+
+  schemas:
+    # Vendor Schemas
+    Vendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Vendor ID
+        organizationId:
+          type: string
+          format: uuid
+          description: Organization ID
+        name:
+          type: string
+          description: Vendor name
+        code:
+          type: string
+          description: Vendor code (unique)
+        contactPerson:
+          type: string
+          description: Primary contact person
+        email:
+          type: string
+          format: email
+          description: Vendor email
+        phone:
+          type: string
+          description: Vendor phone number
+        address:
+          type: string
+          description: Street address
+        city:
+          type: string
+          description: City
+        state:
+          type: string
+          description: State/Province
+        country:
+          type: string
+          description: Country
+        zipCode:
+          type: string
+          description: Postal/ZIP code
+        taxId:
+          type: string
+          description: Tax identification number
+        paymentTerms:
+          type: string
+          description: Payment terms (e.g., "Net 30")
+        isPreferred:
+          type: boolean
+          description: Whether vendor is preferred
+        isActive:
+          type: boolean
+          description: Whether vendor is active
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          description: Vendor rating (0-5)
+        status:
+          $ref: '#/components/schemas/VendorStatus'
+        notes:
+          type: string
+          description: Additional notes
+        website:
+          type: string
+          format: uri
+          description: Vendor website
+        creditLimit:
+          type: number
+          format: float
+          description: Credit limit
+        currency:
+          type: string
+          description: Currency code (ISO 4217)
+          default: USD
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorContact'
+          description: Vendor contacts
+        purchaseOrders:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseOrder'
+          description: Purchase orders
+        warranties:
+          type: array
+          items:
+            $ref: '#/components/schemas/Warranty'
+          description: Warranties
+
+    VendorCreate:
+      type: object
+      required:
+        - organizationId
+        - name
+        - code
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+          description: Organization ID
+        name:
+          type: string
+          description: Vendor name
+        code:
+          type: string
+          description: Vendor code (must be unique)
+        contactPerson:
+          type: string
+          description: Primary contact person
+        email:
+          type: string
+          format: email
+          description: Vendor email
+        phone:
+          type: string
+          description: Vendor phone number
+        address:
+          type: string
+          description: Street address
+        city:
+          type: string
+          description: City
+        state:
+          type: string
+          description: State/Province
+        country:
+          type: string
+          description: Country
+        zipCode:
+          type: string
+          description: Postal/ZIP code
+        taxId:
+          type: string
+          description: Tax identification number
+        paymentTerms:
+          type: string
+          description: Payment terms (e.g., "Net 30")
+        isPreferred:
+          type: boolean
+          description: Whether vendor is preferred
+        isActive:
+          type: boolean
+          description: Whether vendor is active
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          description: Vendor rating (0-5)
+        status:
+          $ref: '#/components/schemas/VendorStatus'
+        notes:
+          type: string
+          description: Additional notes
+        website:
+          type: string
+          format: uri
+          description: Vendor website
+        creditLimit:
+          type: number
+          format: float
+          description: Credit limit
+        currency:
+          type: string
+          description: Currency code (ISO 4217)
+          default: USD
+
+    VendorUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Vendor name
+        contactPerson:
+          type: string
+          description: Primary contact person
+        email:
+          type: string
+          format: email
+          description: Vendor email
+        phone:
+          type: string
+          description: Vendor phone number
+        address:
+          type: string
+          description: Street address
+        city:
+          type: string
+          description: City
+        state:
+          type: string
+          description: State/Province
+        country:
+          type: string
+          description: Country
+        zipCode:
+          type: string
+          description: Postal/ZIP code
+        taxId:
+          type: string
+          description: Tax identification number
+        paymentTerms:
+          type: string
+          description: Payment terms (e.g., "Net 30")
+        isPreferred:
+          type: boolean
+          description: Whether vendor is preferred
+        isActive:
+          type: boolean
+          description: Whether vendor is active
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          description: Vendor rating (0-5)
+        status:
+          $ref: '#/components/schemas/VendorStatus'
+        notes:
+          type: string
+          description: Additional notes
+        website:
+          type: string
+          format: uri
+          description: Vendor website
+        creditLimit:
+          type: number
+          format: float
+          description: Credit limit
+        currency:
+          type: string
+          description: Currency code (ISO 4217)
+
+    VendorStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE, BLOCKED, UNDER_REVIEW]
+      description: Vendor status
+
+    VendorListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vendor'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    VendorStatistics:
+      type: object
+      properties:
+        vendorId:
+          type: string
+          format: uuid
+          description: Vendor ID
+        purchaseOrders:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total number of purchase orders
+            totalAmount:
+              type: number
+              format: float
+              description: Total amount of all purchase orders
+        warranties:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total number of warranties
+            active:
+              type: integer
+              description: Number of active warranties
+        assets:
+          type: integer
+          description: Number of assets from this vendor
+
+    # Vendor Contact Schemas
+    VendorContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Contact ID
+        vendorId:
+          type: string
+          format: uuid
+          description: Vendor ID
+        name:
+          type: string
+          description: Contact name
+        email:
+          type: string
+          format: email
+          description: Contact email
+        phone:
+          type: string
+          description: Contact phone number
+        position:
+          type: string
+          description: Contact position/title
+        isPrimary:
+          type: boolean
+          description: Whether this is the primary contact
+        notes:
+          type: string
+          description: Additional notes
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        vendor:
+          $ref: '#/components/schemas/Vendor'
+
+    VendorContactCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Contact name
+        email:
+          type: string
+          format: email
+          description: Contact email
+        phone:
+          type: string
+          description: Contact phone number
+        position:
+          type: string
+          description: Contact position/title
+        isPrimary:
+          type: boolean
+          description: Whether this is the primary contact
+        notes:
+          type: string
+          description: Additional notes
+
+    VendorContactUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Contact name
+        email:
+          type: string
+          format: email
+          description: Contact email
+        phone:
+          type: string
+          description: Contact phone number
+        position:
+          type: string
+          description: Contact position/title
+        isPrimary:
+          type: boolean
+          description: Whether this is the primary contact
+        notes:
+          type: string
+          description: Additional notes
+
+    # Purchase Order Schemas
+    PurchaseOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Purchase order ID
+        orderNumber:
+          type: string
+          description: Order number (unique)
+        vendorId:
+          type: string
+          format: uuid
+          description: Vendor ID
+        orderDate:
+          type: string
+          format: date-time
+          description: Order date
+        expectedDate:
+          type: string
+          format: date-time
+          description: Expected delivery date
+        receivedDate:
+          type: string
+          format: date-time
+          description: Actual received date
+        status:
+          $ref: '#/components/schemas/PurchaseOrderStatus'
+        totalAmount:
+          type: number
+          format: float
+          description: Total order amount
+        currency:
+          type: string
+          description: Currency code (ISO 4217)
+          default: USD
+        notes:
+          type: string
+          description: Order notes
+        internalNotes:
+          type: string
+          description: Internal notes
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        vendor:
+          $ref: '#/components/schemas/Vendor'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseOrderItem'
+
+    PurchaseOrderCreate:
+      type: object
+      required:
+        - orderNumber
+        - vendorId
+        - orderDate
+        - totalAmount
+        - items
+      properties:
+        orderNumber:
+          type: string
+          description: Order number (must be unique)
+        vendorId:
+          type: string
+          format: uuid
+          description: Vendor ID
+        orderDate:
+          type: string
+          format: date-time
+          description: Order date
+        expectedDate:
+          type: string
+          format: date-time
+          description: Expected delivery date
+        status:
+          $ref: '#/components/schemas/PurchaseOrderStatus'
+        totalAmount:
+          type: number
+          format: float
+          description: Total order amount
+        currency:
+          type: string
+          description: Currency code (ISO 4217)
+          default: USD
+        notes:
+          type: string
+          description: Order notes
+        internalNotes:
+          type: string
+          description: Internal notes
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseOrderItemCreate'
+
+    PurchaseOrderUpdate:
+      type: object
+      properties:
+        orderNumber:
+          type: string
+          description: Order number
+        expectedDate:
+          type: string
+          format: date-time
+          description: Expected delivery date
+        receivedDate:
+          type: string
+          format: date-time
+          description: Actual received date
+        status:
+          $ref: '#/components/schemas/PurchaseOrderStatus'
+        totalAmount:
+          type: number
+          format: float
+          description: Total order amount
+        notes:
+          type: string
+          description: Order notes
+        internalNotes:
+          type: string
+          description: Internal notes
+
+    PurchaseOrderStatus:
+      type: string
+      enum: [PENDING, CONFIRMED, SHIPPED, RECEIVED, CANCELLED]
+      description: Purchase order status
+
+    PurchaseOrderListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseOrder'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PurchaseOrderItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Item ID
+        purchaseOrderId:
+          type: string
+          format: uuid
+          description: Purchase order ID
+        assetId:
+          type: string
+          format: uuid
+          description: Asset ID (if linked)
+        description:
+          type: string
+          description: Item description
+        quantity:
+          type: integer
+          description: Ordered quantity
+        unitPrice:
+          type: number
+          format: float
+          description: Unit price
+        totalPrice:
+          type: number
+          format: float
+          description: Total price
+        receivedQuantity:
+          type: integer
+          description: Received quantity
+        asset:
+          $ref: '#/components/schemas/Asset'
+
+    PurchaseOrderItemCreate:
+      type: object
+      required:
+        - description
+        - quantity
+        - unitPrice
+        - totalPrice
+      properties:
+        assetId:
+          type: string
+          format: uuid
+          description: Asset ID (if linking to existing asset)
+        description:
+          type: string
+          description: Item description
+        quantity:
+          type: integer
+          description: Ordered quantity
+        unitPrice:
+          type: number
+          format: float
+          description: Unit price
+        totalPrice:
+          type: number
+          format: float
+          description: Total price
+
+    # Warranty Schemas
+    Warranty:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Warranty ID
+        vendorId:
+          type: string
+          format: uuid
+          description: Vendor ID
+        assetId:
+          type: string
+          format: uuid
+          description: Asset ID
+        warrantyNumber:
+          type: string
+          description: Warranty number
+        startDate:
+          type: string
+          format: date-time
+          description: Warranty start date
+        endDate:
+          type: string
+          format: date-time
+          description: Warranty end date
+        type:
+          $ref: '#/components/schemas/WarrantyType'
+        coverage:
+          type: string
+          description: Warranty coverage description
+        terms:
+          type: string
+          description: Warranty terms
+        status:
+          $ref: '#/components/schemas/WarrantyStatus'
+        notes:
+          type: string
+          description: Additional notes
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        vendor:
+          $ref: '#/components/schemas/Vendor'
+        asset:
+          $ref: '#/components/schemas/Asset'
+        claims:
+          type: array
+          items:
+            $ref: '#/components/schemas/WarrantyClaim'
+
+    WarrantyCreate:
+      type: object
+      required:
+        - vendorId
+        - assetId
+        - startDate
+        - endDate
+        - type
+      properties:
+        vendorId:
+          type: string
+          format: uuid
+          description: Vendor ID
+        assetId:
+          type: string
+          format: uuid
+          description: Asset ID
+        warrantyNumber:
+          type: string
+          description: Warranty number
+        startDate:
+          type: string
+          format: date-time
+          description: Warranty start date
+        endDate:
+          type: string
+          format: date-time
+          description: Warranty end date
+        type:
+          $ref: '#/components/schemas/WarrantyType'
+        coverage:
+          type: string
+          description: Warranty coverage description
+        terms:
+          type: string
+          description: Warranty terms
+        status:
+          $ref: '#/components/schemas/WarrantyStatus'
+        notes:
+          type: string
+          description: Additional notes
+
+    WarrantyUpdate:
+      type: object
+      properties:
+        warrantyNumber:
+          type: string
+          description: Warranty number
+        startDate:
+          type: string
+          format: date-time
+          description: Warranty start date
+        endDate:
+          type: string
+          format: date-time
+          description: Warranty end date
+        type:
+          $ref: '#/components/schemas/WarrantyType'
+        coverage:
+          type: string
+          description: Warranty coverage description
+        terms:
+          type: string
+          description: Warranty terms
+        status:
+          $ref: '#/components/schemas/WarrantyStatus'
+        notes:
+          type: string
+          description: Additional notes
+
+    WarrantyType:
+      type: string
+      enum: [STANDARD, EXTENDED, MANUFACTURER, THIRD_PARTY]
+      description: Warranty type
+
+    WarrantyStatus:
+      type: string
+      enum: [ACTIVE, EXPIRED, CANCELLED, CLAIMED]
+      description: Warranty status
+
+    WarrantyListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Warranty'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    WarrantyClaim:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Claim ID
+        warrantyId:
+          type: string
+          format: uuid
+          description: Warranty ID
+        claimNumber:
+          type: string
+          description: Claim number
+        claimDate:
+          type: string
+          format: date-time
+          description: Claim date
+        description:
+          type: string
+          description: Claim description
+        status:
+          type: string
+          enum: [SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, IN_PROGRESS, COMPLETED]
+          description: Claim status
+        resolution:
+          type: string
+          description: Claim resolution
+        resolvedAt:
+          type: string
+          format: date-time
+          description: Resolution date
+        estimatedCost:
+          type: number
+          format: float
+          description: Estimated cost
+        actualCost:
+          type: number
+          format: float
+          description: Actual cost
+        notes:
+          type: string
+          description: Additional notes
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    # Common Schemas
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Asset ID
+        name:
+          type: string
+          description: Asset name
+        assetTag:
+          type: string
+          description: Asset tag
+        serialNumber:
+          type: string
+          description: Serial number
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of items
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Items per page
+        totalPages:
+          type: integer
+          description: Total number of pages
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        errors:
+          type: array
+          items:
+            type: string
+          description: Detailed error messages
+
+    ConflictError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        blockers:
+          type: object
+          properties:
+            purchaseOrders:
+              type: integer
+              description: Number of purchase orders
+            warranties:
+              type: integer
+              description: Number of warranties
+            assets:
+              type: integer
+              description: Number of assets
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            validation:
+              summary: Validation error
+              value:
+                message: "Validation error"
+                errors:
+                  - "Vendor name is required"
+                  - "Invalid email format"
+
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            unauthorized:
+              summary: Unauthorized
+              value:
+                message: "Unauthorized"
+
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            forbidden:
+              summary: Forbidden
+              value:
+                message: "Forbidden - insufficient permissions"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notFound:
+              summary: Not found
+              value:
+                message: "Vendor not found"
+
+    Conflict:
+      description: Conflict - resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            conflict:
+              summary: Conflict
+              value:
+                message: "Vendor code already exists"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            internalError:
+              summary: Internal error
+              value:
+                message: "Internal server error"

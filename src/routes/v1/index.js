@@ -5,6 +5,7 @@ const organizationRoutes = require('./organizationRoutes');
 const assignmentRoutes = require('./assignmentRoutes');
 const notificationRoutes = require('./notificationRoutes');
 const dashboardRoutes = require('./dashboardRoutes');
+const authRoutes = require('./authRoutes');
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.get('/health', (req, res) => {
   });
 });
 
+router.use('/auth', authRoutes);
 router.use('/organizations', organizationRoutes);
 router.use('/assignments', assignmentRoutes);
 router.use('/notifications', notificationRoutes);

@@ -211,7 +211,7 @@ async function listAssets(req, res) {
     res.json({
       success: true,
       message: 'Assets retrieved successfully',
-      result.assets,
+      assets: result.assets,
       meta: result.meta
     });
   } catch (error) {
@@ -485,7 +485,7 @@ async function importAssetsFromCSV(req, res) {
       success: true,
       message: 'Assets imported successfully',
       report,
-      result.validatedRecords
+      validatedRecords: result.validatedRecords
     });
   } catch (error) {
     console.error('Error importing assets:', error);

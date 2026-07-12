@@ -47,25 +47,6 @@ function generateBarcodeImage(assetId, format = 'CODE128', width = 2, height = 1
   return generate({ object: barcode, assetId, options: { format, width, height } });
 }
 
-async function generateBarcodeFromAPI(assetId, format = 'CODE128', size = 100) {
-  try {
-    const barcode = require('barcode');
-    const barcodeObj = await barcode.create({ 
-      object: barcode, 
-      assetId, 
-      options: { format, width: 2, height: size } 
-    });
-    return {
-      success: true,
-      image: barcodeObj
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
 
 async function generateCompositeBarcodeQR(assetId, assetDetails = {}) {
   const barcodeData = assetId;
@@ -90,7 +71,7 @@ async function generateCompositeBarcodeQR(assetId, assetDetails = {}) {
       success: true,
       barcode,
       qr: qrImage.toString('base64'),
-      {
+      data: {
         assetId,
         barcodeData,
         qrData
@@ -118,7 +99,7 @@ function generateQRCodeAssetTagFormat(assetTag, additionalData = {}) {
   });
 }
 
-function generateBarcodeFromAPI format(format, data, options) {
+function generateBarcodeFromAPI(format, data, options) {
   const defaultOptions = {
     format: 'CODE128',
     width: 2,
@@ -186,7 +167,7 @@ async function generateQRCodeDataURL(qrData, options = {}) {
   }
 }
 
-function generateCode format(format, data, options = {}) {
+function generateCode(format, data, options = {}) {
   const formatAudio = format.toLowerCase();
   const defaultOptions = {
     format: 'CODE128',
@@ -203,16 +184,16 @@ function generateCode format(format, data, options = {}) {
       return generateQRCodeAssetTagFormat(data, finalOptions);
     
     case 'barcode':
-      return generateBarcodeFromAPI format(finalOptions.format, data, finalOptions);
+      return generateBarcodeFromAPI(finalOptions.format, data, finalOptions);
     
     case 'composite':
       return generateCompositeBarcodeQR(data, finalOptions);
     
     case 'barcode-high-res':
-      return generateBarcodeFromAPI highRes(data, finalOptions);
+      return generateBarcodeFromAPI(data, finalOptions);
 
     default:
-      return generateBarcodeFromAPI format(finalOptions.format, data, finalOptions);
+      return generateBarcodeFromAPI(finalOptions.format, data, finalOptions);
   }
 }
 
@@ -223,8 +204,5 @@ module.exports = {
   generateBarcodeFromAPI,
   generateCompositeBarcodeQR,
   generateQRCodeAssetTagFormat,
-  generateBarcodeFromAPIFormat,
-  generateQRCodeHighQuality,
-  generateQRCodeDataURL,
-  generateCodeFormat
+  generateCode
 };

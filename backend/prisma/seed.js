@@ -4,48 +4,27 @@ const { hashPassword } = require('../src/utils/password');
 const prisma = new PrismaClient();
 
 async function main() {
-  const dept = await prisma.department.upsert({
-    where: { id: 'seed-dept-engineering' },
+  console.log('Starting database seeding...');
+
+  // Create default organization
+  const org = await prisma.organization.upsert({
+    where: { id: 'seed-org-main' },
     update: {},
     create: {
-      id: 'seed-dept-engineering',
-      name: 'Engineering',
-      status: 'ACTIVE',
+      id: 'seed-org-main',
+      name: 'Main Organization',
+      code: 'MAIN',
+      email: 'admin@mainorg.com',
+      isActive: true,
     },
   });
 
-  await prisma.employee.upsert({
-    where: { email: 'admin@company.com' },
-    update: {},
-    create: {
-      name: 'System Admin',
-      email: 'admin@company.com',
-      password: hashPassword('Admin@12345'),
-      role: 'ADMIN',
-      departmentId: dept.id,
-    },
-  });
-
-  await prisma.employee.upsert({
-    where: { email: 'employee@company.com' },
-    update: {},
-    create: {
-      name: 'Demo Employee',
-      email: 'employee@company.com',
-      password: hashPassword('Employee@123'),
-      role: 'EMPLOYEE',
-      departmentId: dept.id,
-    },
-  });
-
-  console.log('Seed complete.');
-  console.log('  Admin:    admin@company.com / Admin@12345');
-  console.log('  Employee: employee@company.com / Employee@123');
+  console.log('Seeding complete.');
 }
 
 main()
   .catch((err) => {
-    console.error(err);
+    console.error('Seeding failed:', err);
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());

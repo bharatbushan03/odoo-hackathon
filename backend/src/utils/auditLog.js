@@ -1,328 +1,156 @@
-const prisma = require('../config/prisma');
+const prisma = require('../config/database');
 
-async function logAssetChange(assetId, action, oldValues, newValues, changedBy, changedByRole = 'SYSTEM') {
+const log = async ({ organizationId, employeeId, action, entityType, entityId, description, oldValues, newValues, ipAddress, userAgent }) => {
   try {
-    const auditLog = await prisma.auditLog.create({
-      {
+    return await prisma.auditLog.create({
+      data: {
+        organizationId,
+        employeeId,
         action,
-        entityType: 'Asset',
-        entityId: assetId,
-        oldValues: oldValues ? JSON.stringify(oldValues) : null,
-        newValues: newValues ? JSON.stringify(newValues) : null,
-        changedBy,
-        changedByRole
-      }
+        entityType,
+        entityId,
+        description,
+        oldValues: oldValues || undefined,
+        newValues: newValues || undefined,
+        ipAddress,
+        userAgent,
+      },
     });
-    return auditLog;
   } catch (error) {
-    console.error('Failed to log asset change:', error);
+    console.error('Failed to create audit log:', error);
     return null;
   }
-}
+};
 
-async function getAssetChanges(assetId, options = {}) {
-  try {
-    const { limit = 50, page = 1 } = options;
-    const skip = (page - 1) * limit;
+const logAuth = async ({ organizationId, employeeId, action, ipAddress, userAgent }) =>
+  log({ organizationId, employeeId, action, entityType: 'Auth', description: `User ${action.toLowerCase()}`, ipAddress, userAgent });
 
-    const [changes, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where: { entityType: 'Asset', entityId: assetId },
-        include: {
-          actor: {
-            include: {
-              department: {
-                select: { name: true }
-              }
-            }
-          }
-        },
-        orderBy: { changedAt: 'desc' },
-        skip,
-        take: limit
-      }),
-      prisma.auditLog.count({
-        where: { entityType: 'Asset', entityId: assetId }
-      })
-    ]);
+const logCRUD = async ({ organizationId, employeeId, action, entityType, entityId, description, oldValues, newValues, ipAddress, userAgent }) =>
+  log({ organizationId, employeeId, action, entityType, entityId, description, oldValues, newValues, ipAddress, userAgent });
 
-    return {
-      changes,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    };
-  } catch (error) {
-    console.error('Failed to get asset changes:', error);
-    throw error;
+const logAssignment = async ({ organizationId, employeeId, assetId, assignedTo, ipAddress, userAgent }) =>
+  log({ organizationId, employeeId, action: 'ASSIGN', entityType: 'Asset', entityId: assetId, description: `Asset assigned to ${assignedTo}`, ipAddress, userAgent });
+
+const logTransfer = async ({ organizationId, employeeId, assetId, from, to, ipAddress, userAgent }) =>
+  log({ organizationId, employeeId, action: 'TRANSFER', entityType: 'Asset', entityId: assetId, description: `Asset transferred from ${from} to ${to}`, ipAddress, userAgent });
+
+const logMaintenance = async ({ organizationId, employeeId, action, maintenanceId, description, oldValues, newValues, ipAddress, userAgent }) =>
+  log({ organizationId, employeeId, action, entityType: 'MaintenanceRequest', entityId: maintenanceId, description, oldValues, newValues, ipAddress, userAgent });
+
+const logApproval = async ({ organizationId, employeeId, action, entityType, entityId, description, ipAddress, userAgent }) =>
+  log({ organizationId, employeeId, action, entityType, entityId, description, ipAddress, userAgent });
+
+const getAuditLogs = async (organizationId, filters = {}, pagination = {}) => {
+  const { action, entityType, entityId, employeeId, fromDate, toDate, search } = filters;
+  const { page = 1, limit = 50 } = pagination;
+  const skip = (page - 1) * limit;
+
+  const where = { organizationId };
+  if (action) where.action = action;
+  if (entityType) where.entityType = entityType;
+  if (entityId) where.entityId = entityId;
+  if (employeeId) where.employeeId = employeeId;
+  if (fromDate || toDate) {
+    where.createdAt = {};
+    if (fromDate) where.createdAt.gte = new Date(fromDate);
+    if (toDate) where.createdAt.lte = new Date(toDate);
   }
-}
-
-async function getAuditLogs(filters = {}, options = {}) {
-  try {
-    const { 
-      entityType = 'Asset',
-      entityId,
-      actorId,
-      action,
-      changedByRole,
-      startDate,
-      endDate,
-      limit = 50, 
-      page = 1 
-    } = filters;
-
-    const { sortBy = 'changedAt', sortOrder = 'desc' } = options;
-
-    const where = { entityType };
-    
-    if (entityId) where.entityId = entityId;
-    if (actorId) where.changedBy = actorId;
-    if (action) where.action = action;
-    if (changedByRole) where.changedByRole = changedByRole;
-    if (startDate || endDate) {
-      where.changedAt = {};
-      if (startDate) where.changedAt.gte = new Date(startDate);
-      if (endDate) where.changedAt.lte = new Date(endDate);
-    }
-
-    const orderBy = {};
-    orderBy[sortBy] = sortOrder === 'asc' ? 'asc' : 'desc';
-
-    const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where,
-        include: {
-          actor: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              department: {
-                select: { name: true }
-              }
-            }
-          }
-        },
-        orderBy,
-        skip: (page - 1) * limit,
-        take: limit
-      }),
-      prisma.auditLog.count({ where })
-    ]);
-
-    return {
-      logs,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    };
-  } catch (error) {
-    console.error('Failed to get audit logs:', error);
-    throw error;
-  }
-}
-
-async function getAuditLog(id) {
-  try {
-    const log = await prisma.auditLog.findUnique({
-      where: { id },
-      include: {
-        actor: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            department: {
-              select: { name: true }
-            }
-          }
-        }
-      }
-    });
-
-    if (!log) {
-      return null;
-    }
-
-    const parsedChanges = {
-      ...log,
-      oldValues: log.oldValues ? JSON.parse(log.oldValues) : null,
-      newValues: log.newValues ? JSON.parse(log.newValues) : null
-    };
-
-    return parsedChanges;
-  } catch (error) {
-    console.error('Failed to get audit log:', error);
-    throw error;
-  }
-}
-
-function formatChangeDescription(action, oldValues, newValues) {
-  let description = '';
-  
-  switch (action) {
-    case 'CREATE':
-      description = 'Asset created';
-      break;
-    case 'UPDATE':
-      description = 'Asset updated';
-      break;
-    case 'DELETE':
-      description = 'Asset deleted';
-      break;
-    case 'ASSIGN':
-      description = 'Asset assigned to employee';
-      break;
-    case 'UNASSIGN':
-      description = 'Asset unassigned from employee';
-      break;
-    case 'UPDATE_STATUS':
-      description = 'Asset status updated';
-      break;
-    case 'UPDATE_LOCATION':
-      description = 'Asset location updated';
-      break;
-    default:
-      description = `${action} asset`;
+  if (search) {
+    where.description = { contains: search, mode: 'insensitive' };
   }
 
-  if (oldValues && newValues) {
-    const changedFields = Object.keys(oldValues).filter(field => 
-      oldValues[field] !== newValues[field]
-    );
-
-    if (changedFields.length > 0) {
-      const fieldNames = changedFields.map(field => {
-        const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        return fieldName;
-      });
-
-      description += ` - Fields changed: ${fieldNames.join(', ')}`;
-    }
-  }
-
-  return description;
-}
-
-async function getActivitySummary(filters = {}) {
-  try {
-    const { 
-      startDate, 
-      endDate, 
-      changedByRole 
-    } = filters;
-
-    const where = {};
-    if (startDate || endDate) {
-      where.changedAt = {};
-      if (startDate) where.changedAt.gte = new Date(startDate);
-      if (endDate) where.changedAt.lte = new Date(endDate);
-    }
-    if (changedByRole) {
-      where.changedByRole = changedByRole;
-    }
-
-    const activitySummary = await prisma.auditLog.groupBy({
-      by: ['action', 'changedByRole'],
+  const [logs, total] = await Promise.all([
+    prisma.auditLog.findMany({
       where,
-      _count: true,
-      _min: { changedAt: true },
-      _max: { changedAt: true }
-    });
-
-    const summary = activitySummary.map(item => ({
-      action: item.action,
-      role: item.changedByRole,
-      count: item._count,
-      firstActivity: item._min.changedAt,
-      lastActivity: item._max.changedAt
-    }));
-
-    return summary;
-  } catch (error) {
-    console.error('Failed to get activity summary:', error);
-    throw error;
-  }
-}
-
-async function getAssetChangeDetail(assetId, field, options = {}) {
-  try {
-    const { 
-      startDate, 
-      endDate, 
-      limit = 50 
-    } = options;
-
-    let logs = await prisma.auditLog.findMany({
-      where: { 
-        entityType: 'Asset',
-        entityId: assetId,
-        action: 'UPDATE'
+      include: {
+        employee: { select: { id: true, name: true, email: true, role: true } },
       },
-      skip: 0,
-      take: limit
-    });
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.auditLog.count({ where }),
+  ]);
 
-    let fieldLogs = [];
-    
-    for (const log of logs) {
-      try {
-        const oldValues = log.oldValues ? JSON.parse(log.oldValues) : {};
-        const newValues = log.newValues ? JSON.parse(log.newValues) : {};
+  return { logs, total, page, limit, totalPages: Math.ceil(total / limit) };
+};
 
-        if (oldValues[field] !== undefined || newValues[field] !== undefined) {
-          fieldLogs.push({
-            logId: log.id,
-            timestamp: log.changedAt,
-            old: oldValues[field],
-            new: newValues[field],
-            actor: log.actor,
-            description: formatChangeDescription(log.action, oldValues, newValues)
-          });
-        }
-      } catch (parseError) {
-        continue;
-      }
-    }
+const getAuditLogById = async (id) => {
+  const logEntry = await prisma.auditLog.findUnique({
+    where: { id },
+    include: {
+      employee: { select: { id: true, name: true, email: true, role: true } },
+    },
+  });
+  return logEntry;
+};
 
-    return fieldLogs.sort((a, b) => a.timestamp - b.timestamp);
-  } catch (error) {
-    console.error('Failed to get asset change detail:', error);
-    throw error;
-  }
-}
+const getEntityAuditLogs = async (entityType, entityId, pagination = {}) => {
+  const { page = 1, limit = 50 } = pagination;
+  const skip = (page - 1) * limit;
 
-async function cleanupOldAuditLogs(cutoffDate, limit = 1000) {
-  try {
-    const deletedCount = await prisma.auditLog.deleteMany({
-      where: {
-        changedAt: {
-          lt: cutoffDate
-        }
+  const where = { entityType, entityId };
+
+  const [logs, total] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      include: {
+        employee: { select: { id: true, name: true, email: true } },
       },
-      take: limit
-    });
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.auditLog.count({ where }),
+  ]);
 
-    return {
-      success: true,
-      deletedCount
-    };
-  } catch (error) {
-    console.error('Failed to cleanup audit logs:', error);
-    throw error;
+  return { logs, total, page, limit, totalPages: Math.ceil(total / limit) };
+};
+
+const getActivitySummary = async (organizationId, filters = {}) => {
+  const { fromDate, toDate } = filters;
+  const where = { organizationId };
+  if (fromDate || toDate) {
+    where.createdAt = {};
+    if (fromDate) where.createdAt.gte = new Date(fromDate);
+    if (toDate) where.createdAt.lte = new Date(toDate);
   }
-}
+
+  const summary = await prisma.auditLog.groupBy({
+    by: ['action', 'entityType'],
+    where,
+    _count: { id: true },
+    _min: { createdAt: true },
+    _max: { createdAt: true },
+  });
+
+  return summary.map((item) => ({
+    action: item.action,
+    entityType: item.entityType,
+    count: item._count.id,
+    firstActivity: item._min.createdAt,
+    lastActivity: item._max.createdAt,
+  }));
+};
+
+const cleanupOldAuditLogs = async (cutoffDate) => {
+  const result = await prisma.auditLog.deleteMany({
+    where: { createdAt: { lt: cutoffDate } },
+  });
+  return { deletedCount: result.count };
+};
 
 module.exports = {
-  logAssetChange,
-  getAssetChanges,
+  log,
+  logAuth,
+  logCRUD,
+  logAssignment,
+  logTransfer,
+  logMaintenance,
+  logApproval,
   getAuditLogs,
-  getAuditLog,
-  formatChangeDescription,
+  getAuditLogById,
+  getEntityAuditLogs,
   getActivitySummary,
-  getAssetChangeDetail,
-  cleanupOldAuditLogs
+  cleanupOldAuditLogs,
 };
