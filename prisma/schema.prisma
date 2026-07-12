@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AssetStatus {
+  AVAILABLE
+  ASSIGNED
+  UNDER_MAINTENANCE
+  RETIRED
+  DISPOSED
+}
+
+enum AssetCategory {
+  HARDWARE
+  SOFTWARE
+  VEHICLE
+  FURNITURE
+  EQUIPMENT
+  OTHER
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  TECHNICIAN
+  VIEWER
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  employeeId    String   @unique @db.VarChar(50)
+  email         String   @unique @db.VarChar(255)
+  password      String   @db.VarChar(255)
+  firstName     String   @db.VarChar(100)
+  lastName      String   @db.VarChar(100)
+  role          UserRole @default(VIEWER)
+  isActive      Boolean  @default(true)
+  phone         String?  @db.VarChar(20)
+  departmentId  String?  @db.Uuid
+  lastLoginAt   DateTime?
+
+  department   Department?         @relation(fields: [departmentId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignments  AssetAssignment[]
+  maintenance  MaintenanceRecord[]
+  createdAssets Asset[]           @relation("AssetCreator")
+  updatedAssets Asset[]           @relation("AssetUpdater")
+
+  @@map("users")
+}
+
+model Department {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(200)
+  code      String   @unique @db.VarChar(20)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  assets      Asset[]
+
+  @@map("departments")
+}
+
+model Asset {
+  id               String        @id @default(uuid()) @db.Uuid
+  assetTag         String        @unique @db.VarChar(100)
+  name             String        @db.VarChar(255)
+  description      String?       @db.Text
+  category         AssetCategory
+  status           AssetStatus   @default(AVAILABLE)
+  serialNumber     String?       @unique @db.VarChar(200)
+  modelNumber      String?       @db.VarChar(200)
+  manufacturer     String?       @db.VarChar(255)
+  purchaseDate     DateTime?
+  purchaseCost     Decimal?      @db.Decimal(12, 2)
+  warrantyExpiry   DateTime?
+  location         String?       @db.VarChar(255)
+  departmentId     String?       @db.Uuid
+  assignedToId     String?       @db.Uuid
+  imageUrl         String?       @db.VarChar(500)
+  notes            String?       @db.Text
+  createdById      String        @db.Uuid
+  updatedById      String        @db.Uuid
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  department       Department?          @relation(fields: [departmentId], references: [id])
+  createdBy        User                 @relation("AssetCreator", fields: [createdById], references: [id])
+  updatedBy        User                 @relation("AssetUpdater", fields: [updatedById], references: [id])
+  assignments      AssetAssignment[]
+  maintenanceRecords MaintenanceRecord[]
+
+  @@index([status])
+  @@index([category])
+  @@index([departmentId])
+  @@map("assets")
+}
+
+model AssetAssignment {
+  id          String   @id @default(uuid()) @db.Uuid
+  assetId     String   @db.Uuid
+  userId      String   @db.Uuid
+  assignedAt  DateTime @default(now())
+  returnedAt  DateTime?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  asset        Asset   @relation(fields: [assetId], references: [id])
+  user         User    @relation(fields: [userId], references: [id])
+
+  @@index([assetId])
+  @@index([userId])
+  @@map("asset_assignments")
+}
+
+model MaintenanceRecord {
+  id              String             @id @default(uuid()) @db.Uuid
+  assetId         String             @db.Uuid
+  performedById   String             @db.Uuid
+  title           String             @db.VarChar(255)
+  description     String?            @db.Text
+  status          MaintenanceStatus  @default(SCHEDULED)
+  scheduledDate   DateTime?
+  completedDate   DateTime?
+  cost            Decimal?           @db.Decimal(12, 2)
+  vendorName      String?            @db.VarChar(255)
+  notes           String?            @db.Text
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  asset           Asset              @relation(fields: [assetId], references: [id])
+  performedBy     User               @relation(fields: [performedById], references: [id])
+
+  @@index([assetId])
+  @@index([status])
+  @@map("maintenance_records")
+}

@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
+import PageTopBar from '../../components/layout/page-topbar.jsx';
 import '../../styles/assetflow-theme.css';
 
 const ASSETS = [
   { tag: 'AF-0012', name: 'Dell Laptop', category: 'IT / Computing', status: 'Allocated', location: 'Bangalore' },
-  { tag: 'AF-0062', name: 'Epson Projector', category: 'AV Equipment', status: 'Maintenance', location: 'HQ Floor 2' },
+  { tag: 'AF-0042', name: 'Epson Projector', category: 'AV Equipment', status: 'Maintenance', location: 'HQ Floor 2' },
   { tag: 'AF-0114', name: 'MacBook Pro', category: 'IT / Computing', status: 'Allocated', location: 'Mumbai' },
   { tag: 'AF-0189', name: 'Standing Desk', category: 'Furniture', status: 'Available', location: 'HQ Floor 3' },
   { tag: 'AF-0241', name: 'Conference Phone', category: 'AV Equipment', status: 'Available', location: 'Room 201' },
-  { tag: 'AF-0310', name: 'HP Scanner', category: 'Office Equipment', status: 'Allocated', location: 'Delhi' },
 ];
 
 const STATUS_CLASS = {
@@ -33,16 +33,18 @@ export default function AssetsPage() {
 
   return (
     <div className="af-page">
+      <PageTopBar />
+
       <header className="af-page__header">
-        <h1 className="af-page__title">Asset Directory</h1>
-        <p className="af-page__subtitle">Search and manage all registered assets</p>
+        <h1 className="af-page__title">Asset Registration &amp; Directory</h1>
+        <p className="af-page__subtitle">Search by tag, serial, or QR code</p>
       </header>
 
       <div className="af-toolbar">
         <input
           type="search"
           className="af-search"
-          placeholder="Search by tag, serial, or UID code..."
+          placeholder="Search by tag, serial, or QR code..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -51,7 +53,6 @@ export default function AssetsPage() {
           <option value="IT / Computing">IT / Computing</option>
           <option value="AV Equipment">AV Equipment</option>
           <option value="Furniture">Furniture</option>
-          <option value="Office Equipment">Office Equipment</option>
         </select>
         <select className="af-select" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="all">Status</option>
