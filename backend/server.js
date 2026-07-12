@@ -11,9 +11,12 @@ const path = require('path');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+}));
 app.use(express.json({ limit: '10kb' }));
-app.use('/api', apiLimiter);
+app.use('/api/v1', apiLimiter);
 
 // Load Swagger specification
 const swaggerSpec = YAML.load(path.join(__dirname, 'swagger', 'vendor-management-openapi.yaml'));
@@ -56,11 +59,11 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok', service: 'backend' });
 });
 
-app.get('/api/db-check', async (req, res) => {
+app.get('/api/v1/db-check', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW() as current_time');
     res.json({ status: 'ok', db_time: result.rows[0].current_time });
@@ -69,7 +72,7 @@ app.get('/api/db-check', async (req, res) => {
   }
 });
 
-app.get('/api/hello', async (req, res) => {
+app.get('/api/v1/hello', async (req, res) => {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS greetings (
@@ -86,9 +89,14 @@ app.get('/api/hello', async (req, res) => {
   }
 });
 
-app.use('/api', routes);
+app.use('/api/v1', routes);
 
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+// Only listen if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+}
+
+module.exports = app;

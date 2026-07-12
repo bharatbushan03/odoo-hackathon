@@ -6,6 +6,7 @@ const getIp = (req) => req.ip || req.headers['x-forwarded-for'] || req.connectio
 const getUa = (req) => req.headers['user-agent'] || '';
 
 const registerOrganization = asyncHandler(async (req, res) => {
+  console.log('controller registerOrganization called');
   const result = await authService.registerOrganization(req.body);
   auditLog.logAuth({ organizationId: result.employee.organizationId, employeeId: result.employee.id, action: 'REGISTER_ORG', ipAddress: getIp(req), userAgent: getUa(req) });
   res.status(201).json({ success: true, message: 'Organization registered successfully', data: result });
@@ -15,6 +16,12 @@ const registerAdmin = asyncHandler(async (req, res) => {
   const result = await authService.registerAdmin(req.body);
   auditLog.logAuth({ organizationId: result.employee.organizationId, employeeId: result.employee.id, action: 'REGISTER_ADMIN', ipAddress: getIp(req), userAgent: getUa(req) });
   res.status(201).json({ success: true, message: 'Admin registered successfully', data: result });
+});
+
+const registerEmployee = asyncHandler(async (req, res) => {
+  const result = await authService.registerEmployee(req.body);
+  auditLog.logAuth({ organizationId: result.employee.organizationId, employeeId: result.employee.id, action: 'REGISTER_EMPLOYEE', ipAddress: getIp(req), userAgent: getUa(req) });
+  res.status(201).json({ success: true, message: 'Employee registered successfully', data: result });
 });
 
 const login = asyncHandler(async (req, res) => {
@@ -56,6 +63,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
 module.exports = {
   registerOrganization,
   registerAdmin,
+  registerEmployee,
   login,
   refreshToken,
   logout,

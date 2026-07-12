@@ -40,10 +40,10 @@ export const authApi = {
       body: JSON.stringify({ email, password }),
     }),
 
-  signup: (name, email, password) =>
-    apiFetch('/api/v1/auth/signup', {
+  signup: (name, email, password, organizationCode) =>
+    apiFetch('/api/v1/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, organizationCode }),
     }),
 
   me: () => apiFetch('/api/v1/auth/me'),
@@ -53,4 +53,155 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ email }),
     }),
+};
+
+export const assetApi = {
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/v1/assets${qs ? `?${qs}` : ''}`);
+  },
+
+  create: (data) =>
+    apiFetch('/api/v1/assets', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  get: (id) => apiFetch(`/api/v1/assets/${id}`),
+
+  update: (id, data) =>
+    apiFetch(`/api/v1/assets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id) =>
+    apiFetch(`/api/v1/assets/${id}`, { method: 'DELETE' }),
+};
+
+export const bookingApi = {
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/v1/bookings${qs ? `?${qs}` : ''}`);
+  },
+
+  create: (data) =>
+    apiFetch('/api/v1/bookings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  get: (id) => apiFetch(`/api/v1/bookings/${id}`),
+
+  cancel: (id) =>
+    apiFetch(`/api/v1/bookings/${id}/cancel`, { method: 'PATCH' }),
+};
+
+export const transferApi = {
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/v1/transfers${qs ? `?${qs}` : ''}`);
+  },
+
+  create: (data) =>
+    apiFetch('/api/v1/transfers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  get: (id) => apiFetch(`/api/v1/transfers/${id}`),
+
+  approve: (id) =>
+    apiFetch(`/api/v1/transfers/${id}/approve`, { method: 'PATCH' }),
+
+  reject: (id, reason) =>
+    apiFetch(`/api/v1/transfers/${id}/reject`, {
+      method: 'PATCH',
+      body: JSON.stringify({ rejectionReason: reason }),
+    }),
+
+  cancel: (id) =>
+    apiFetch(`/api/v1/transfers/${id}/cancel`, { method: 'PATCH' }),
+};
+
+export const auditApi = {
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/v1/audits${qs ? `?${qs}` : ''}`);
+  },
+
+  create: (data) =>
+    apiFetch('/api/v1/audits', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  get: (id) => apiFetch(`/api/v1/audits/${id}`),
+
+  close: (id) =>
+    apiFetch(`/api/v1/audits/${id}/close`, { method: 'POST' }),
+
+  addItem: (auditId, data) =>
+    apiFetch(`/api/v1/audits/${auditId}/items`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateItem: (auditId, itemId, data) =>
+    apiFetch(`/api/v1/audits/${auditId}/items/${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+};
+
+export const reportApi = {
+  export: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/v1/reports/export${qs ? `?${qs}` : ''}`);
+  },
+
+  dashboardStats: () => apiFetch('/api/v1/reports/dashboard-stats'),
+};
+
+export const maintenanceApi = {
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/v1/maintenance${qs ? `?${qs}` : ''}`);
+  },
+
+  create: (data) =>
+    apiFetch('/api/v1/maintenance', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  get: (id) => apiFetch(`/api/v1/maintenance/${id}`),
+
+  update: (id, data) =>
+    apiFetch(`/api/v1/maintenance/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  updateStatus: (id, status) =>
+    apiFetch(`/api/v1/maintenance/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+};
+
+export const allocationApi = {
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/v1/allocations${qs ? `?${qs}` : ''}`);
+  },
+
+  create: (data) =>
+    apiFetch('/api/v1/allocations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  return: (id) =>
+    apiFetch(`/api/v1/allocations/${id}/return`, { method: 'POST' }),
 };
