@@ -1,10 +1,10 @@
 import React from 'react';
-import Departments from './components/Departments';
+import AssetCategories from './components/AssetCategories';
 
 function App() {
   return (
     <div className="App">
-      <Departments />
+      <AssetCategories />
     </div>
   );
 }
