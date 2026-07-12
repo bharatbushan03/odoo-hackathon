@@ -45,4 +45,31 @@ const sendPasswordResetEmail = async (email, token) => {
   });
 };
 
-module.exports = { sendEmail, sendVerificationEmail, sendPasswordResetEmail };
+const sendNotificationEmail = async ({ to, name, type, title, message, referenceType, referenceId }) => {
+  const typeLabels = {
+    ASSIGNMENT: 'Asset Assignment',
+    MAINTENANCE: 'Maintenance Update',
+    WARRANTY_EXPIRY: 'Warranty Expiry Notice',
+    APPROVAL_REQUEST: 'Approval Request',
+    APPROVED: 'Request Approved',
+    REJECTED: 'Request Rejected',
+    SYSTEM: 'System Notification',
+  };
+  const label = typeLabels[type] || 'Notification';
+  await sendEmail({
+    to,
+    subject: `${label}: ${title}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">${label}</h2>
+        <p>Hello ${name},</p>
+        <p>${message}</p>
+        ${referenceType && referenceId ? `<p style="color: #666; font-size: 12px;">Reference: ${referenceType} / ${referenceId}</p>` : ''}
+        <hr style="border: none; border-top: 1px solid #eee;" />
+        <p style="color: #999; font-size: 11px;">This is an automated notification. Please do not reply.</p>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendEmail, sendVerificationEmail, sendPasswordResetEmail, sendNotificationEmail };

@@ -30,14 +30,6 @@ enum AssetStatus {
   Disposed
 }
 
-enum LifecycleState {
-  NEW
-  IN_USE
-  MAINTENANCE
-  RETIRED
-  DISPOSED
-}
-
 enum AllocationStatus {
   ACTIVE
   RETURNED
@@ -51,40 +43,33 @@ enum BookingStatus {
   CANCELLED
 }
 
-enum MaintenanceType {
-  PREVENTIVE
-  CORRECTIVE
-  EMERGENCY
-  PREDICTIVE
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
 enum MaintenanceStatus {
-  REQUESTED
   PENDING
   APPROVED
   REJECTED
   TECHNICIAN_ASSIGNED
   IN_PROGRESS
-  COMPLETED
+  RESOLVED
+}
+
+enum TransferStatus {
+  PENDING
+  APPROVED
+  REJECTED
   CANCELLED
 }
 
-enum RecurrenceFrequency {
-  DAILY
-  WEEKLY
-  BIWEEKLY
-  MONTHLY
-  QUARTERLY
-  SEMI_ANNUALLY
-  ANNUALLY
-  CUSTOM
+enum AuditStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+}
+
+enum AuditItemStatus {
+  VERIFIED
+  MISSING
+  DAMAGED
 }
 
 enum Condition {
@@ -121,7 +106,6 @@ model Organization {
   deletedAt DateTime?
 
   employees Employee[]
-  vendors   Vendor[]
 
   @@index([code])
   @@index([deletedAt])
@@ -139,6 +123,7 @@ model Department {
   status           DepartmentStatus @default(ACTIVE)
   employees        Employee[]
   assets           Asset[]
+  audits           Audit[]
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -162,17 +147,17 @@ model Employee {
   updatedAt               DateTime     @updatedAt
   deletedAt               DateTime?
 
-  organization      Organization      @relation(fields: [organizationId], references: [id])
-  department        Department?       @relation(fields: [departmentId], references: [id])
-  headedDepartments Department[]      @relation("DepartmentHead")
-  assignedAssets    Asset[]           @relation("AssignedAssets")
-  raisedMaintenanceRequests   MaintenanceRequest[] @relation("MaintenanceRaisedBy")
+  organization Organization @relation(fields: [organizationId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  headedDepartments Department[] @relation("DepartmentHead")
+  raisedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceRaisedBy")
   technicianMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceTechnician")
-  approvedMaintenanceRequests  MaintenanceRequest[] @relation("MaintenanceApprovedBy")
-  completedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceCompletedBy")
-  uploadedMaintenanceAttachments MaintenanceAttachment[] @relation("MaintenanceAttachmentUploader")
   bookings Booking[]
   refreshTokens RefreshToken[]
+  closedAudits Audit[] @relation("AuditClosedBy")
+  verifiedAuditItems AuditItem[] @relation("AuditItemVerifiedBy")
+  requestedTransfers TransferRequest[] @relation("TransferRequestedBy")
+  approvedTransfers TransferRequest[] @relation("TransferApprovedBy")
 
   @@index([organizationId])
   @@index([email])
@@ -201,70 +186,29 @@ model AssetCategory {
 
 model Asset {
   id                  String             @id @default(uuid())
-  assetId             String             @unique
   name                String
   assetTag            String             @unique
   serialNumber        String?            @unique
-  barcode             String?            @unique
-  qrcode              String?            @unique
-  vendor              String?
-  purchaseDate        DateTime
-  purchaseCost        Float
-  warranty            String?
-  warrantyExpires     DateTime?
-  department          Department?        @relation(fields: [departmentId], references: [id])
-  departmentId        String?
-  assignedEmployee    Employee?          @relation("AssignedAssets", fields: [assignedEmployeeId], references: [id])
-  assignedEmployeeId  String?
-  currentLocation     String
-  category            AssetCategory      @relation(fields: [categoryId], references: [id])
-  categoryId          String
-  lifecycleState      LifecycleState     @default(NEW)
-  status              AssetStatus        @default(Available)
+  acquisitionDate     DateTime
+  cost                Float
   condition           Condition          @default(GOOD)
-  notes               String?
-  purchaseOrderNumber String?
-  orderDate           DateTime?
+  location            String
   shared              Boolean            @default(false)
   bookable            Boolean            @default(false)
-  assetCondition      Condition          @default(GOOD)
-
-  attachments         AssetAttachment[]
+  status              AssetStatus        @default(Available)
+  category            AssetCategory      @relation(fields: [categoryId], references: [id])
+  categoryId          String
+  department          Department?        @relation(fields: [departmentId], references: [id])
+  departmentId        String?
   allocations         Allocation[]
   bookings            Booking[]
   maintenanceRequests MaintenanceRequest[]
-
+  transferRequests    TransferRequest[]
+  auditItems          AuditItem[]
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
-  @@index([assetTag])
-  @@index([serialNumber])
-  @@index([barcode])
-  @@index([qrcode])
-  @@index([categoryId])
-  @@index([departmentId])
-  @@index([assignedEmployeeId])
-  @@index([status])
-  @@index([lifecycleState])
-  @@index([purchaseDate])
-  @@index([createdAt])
   @@map("assets")
-}
-
-model AssetAttachment {
-  id        String   @id @default(uuid())
-  assetId   String
-  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  fileName  String
-  filePath  String
-  fileType  String
-  fileSize  Int
-  uploadedBy String
-  uploadedAt DateTime @default(now())
-
-  @@index([assetId])
-  @@index([uploadedAt])
-  @@map("asset_attachments")
 }
 
 model Allocation {
@@ -279,6 +223,7 @@ model Allocation {
   status            AllocationStatus @default(ACTIVE)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+  transferRequests  TransferRequest[]
 
   @@map("allocations")
 }
@@ -298,112 +243,86 @@ model Booking {
   @@map("bookings")
 }
 
-model Vendor {
-  id              String   @id @default(uuid())
-  organizationId  String
-  name            String
-  contactPerson   String?
-  email           String?
-  phone           String?
-  address         String?
-  city            String?
-  state           String?
-  country         String?
-  zipCode         String?
-  taxId           String?
-  paymentTerms    String?
-  isPreferred     Boolean  @default(false)
-  isActive        Boolean  @default(true)
-  rating          Int?
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  deletedAt       DateTime?
-
-  organization Organization        @relation(fields: [organizationId], references: [id])
-  maintenanceRequests MaintenanceRequest[]
-
-  @@unique([organizationId, name])
-  @@index([organizationId])
-  @@index([isActive])
-  @@index([deletedAt])
-  @@map("vendors")
-}
-
 model MaintenanceRequest {
-  id              String            @id @default(uuid())
-  assetId         String
-  asset           Asset             @relation(fields: [assetId], references: [id])
+  id           String            @id @default(uuid())
+  asset        Asset             @relation(fields: [assetId], references: [id])
+  assetId      String
+  raisedBy     Employee          @relation("MaintenanceRaisedBy", fields: [raisedById], references: [id])
+  raisedById   String
+  issue        String
+  priority     String
+  photo        String?
+  status       MaintenanceStatus @default(PENDING)
+  technician   Employee?         @relation("MaintenanceTechnician", fields: [technicianId], references: [id])
+  technicianId String?
+  resolvedAt   DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
-  type            MaintenanceType   @default(CORRECTIVE)
-  title           String
-  description     String?
-  priority        Priority          @default(MEDIUM)
-  status          MaintenanceStatus @default(REQUESTED)
-
-  scheduledDate   DateTime?
-  startDate       DateTime?
-  completionDate  DateTime?
-  isRecurring     Boolean           @default(false)
-  frequency       RecurrenceFrequency?
-  nextDueDate     DateTime?
-
-  raisedById      String
-  raisedBy        Employee          @relation("MaintenanceRaisedBy", fields: [raisedById], references: [id])
-  technicianId    String?
-  technician      Employee?         @relation("MaintenanceTechnician", fields: [technicianId], references: [id])
-  approvedById    String?
-  approvedBy      Employee?         @relation("MaintenanceApprovedBy", fields: [approvedById], references: [id])
-  completedById   String?
-  completedBy     Employee?         @relation("MaintenanceCompletedBy", fields: [completedById], references: [id])
-
-  vendorId        String?
-  vendor          Vendor?           @relation(fields: [vendorId], references: [id])
-
-  estimatedCost   Float             @default(0)
-  laborCost       Float             @default(0)
-  partsCost       Float             @default(0)
-  vendorCost      Float             @default(0)
-  totalCost       Float             @default(0)
-
-  issue           String?
-  resolution      String?
-  partsUsed       String?
-  notes           String?
-
-  resolvedAt      DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  deletedAt       DateTime?
-
-  attachments     MaintenanceAttachment[]
-
-  @@index([assetId])
-  @@index([raisedById])
-  @@index([technicianId])
-  @@index([vendorId])
-  @@index([status])
-  @@index([type])
-  @@index([priority])
-  @@index([scheduledDate])
-  @@index([deletedAt])
   @@map("maintenance_requests")
 }
 
-model MaintenanceAttachment {
-  id                  String             @id @default(uuid())
-  maintenanceRequestId String
-  maintenanceRequest  MaintenanceRequest @relation(fields: [maintenanceRequestId], references: [id], onDelete: Cascade)
-  fileName            String
-  filePath            String
-  fileType            String
-  fileSize            Int
-  uploadedById        String
-  uploadedBy          Employee           @relation("MaintenanceAttachmentUploader", fields: [uploadedById], references: [id])
-  uploadedAt          DateTime           @default(now())
+model Audit {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  department  Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      AuditStatus @default(PLANNED)
+  closedAt    DateTime?
+  closedBy    Employee?   @relation("AuditClosedBy", fields: [closedById], references: [id])
+  closedById  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  @@index([maintenanceRequestId])
-  @@map("maintenance_attachments")
+  items AuditItem[]
+
+  @@map("audits")
+}
+
+model AuditItem {
+  id        String        @id @default(uuid())
+  audit     Audit         @relation(fields: [auditId], references: [id])
+  auditId   String
+  asset     Asset         @relation(fields: [assetId], references: [id])
+  assetId   String
+  status    AuditItemStatus
+  notes     String?
+  verifiedBy Employee?    @relation("AuditItemVerifiedBy", fields: [verifiedById], references: [id])
+  verifiedById String?
+  verifiedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("audit_items")
+}
+
+model TransferRequest {
+  id              String         @id @default(uuid())
+  asset           Asset           @relation(fields: [assetId], references: [id])
+  assetId         String
+  allocation      Allocation      @relation(fields: [allocationId], references: [id])
+  allocationId    String
+  fromHolderType  String
+  fromHolderId    String
+  fromHolderName  String
+  toHolderType    String
+  toHolderId      String
+  toHolderName    String
+  reason          String
+  status          TransferStatus @default(PENDING)
+  requestedBy     Employee        @relation("TransferRequestedBy", fields: [requestedById], references: [id])
+  requestedById   String
+  approvedBy      Employee?       @relation("TransferApprovedBy", fields: [approvedById], references: [id])
+  approvedById    String?
+  rejectionReason String?
+  approvedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("transfer_requests")
 }
 
 model RefreshToken {
@@ -418,4 +337,46 @@ model RefreshToken {
   @@index([token])
   @@index([employeeId])
   @@map("refresh_tokens")
+}
+
+// ============================================================
+// PERMISSIONS — Granular action definitions
+// ============================================================
+// A Permission represents one atomic action (e.g.
+// "asset.create", "asset.transfer").  Permissions are
+// system-defined and shared across all organizations.
+// ============================================================
+
+model Permission {
+  id          String   @id @default(uuid())
+  module      String
+  action      String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rolePermissions RolePermission[]
+
+  @@unique([module, action])
+  @@index([module])
+  @@map("permissions")
+}
+
+// ============================================================
+// ROLE PERMISSION — Join table (many-to-many)
+// ============================================================
+// Each row links one Role (from the Role enum) to one Permission.
+// Deleting a Permission cascades to destroy the join rows.
+// ============================================================
+
+model RolePermission {
+  id          String   @id @default(uuid())
+  role        String   // Stores the enum value as string (e.g., "SUPER_ADMIN")
+  permission  Permission @relation(fields: [permissionId], references: [id])
+  permissionId String
+  createdAt   DateTime @default(now())
+
+  @@index([permissionId])
+  @@index([role])
+  @@map("role_permissions")
 }
