@@ -9,6 +9,7 @@ const OrganizationService = require('./organizationService');
 const AssignmentService = require('./assignmentService');
 const NotificationService = require('./notificationService');
 const DashboardService = require('./dashboardService');
+const AuthService = require('./authService');
 
 const organizationRepository = new OrganizationRepository();
 const organizationService = new OrganizationService(organizationRepository);
@@ -22,6 +23,8 @@ const assignmentService = new AssignmentService(assignmentRepository, notificati
 const dashboardRepository = new DashboardRepository();
 const dashboardService = new DashboardService(dashboardRepository);
 
+const authService = new AuthService();
+
 module.exports = {
   OrganizationService,
   organizationService,
@@ -31,4 +34,6 @@ module.exports = {
   assignmentService,
   DashboardService,
   dashboardService,
+  AuthService,
+  authService,
 };
