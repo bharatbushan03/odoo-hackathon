@@ -60,6 +60,7 @@ model User {
   maintenance  MaintenanceRecord[]
   createdAssets Asset[]           @relation("AssetCreator")
   updatedAssets Asset[]           @relation("AssetUpdater")
+  notifications Notification[]
 
   @@map("users")
 }
@@ -114,20 +115,24 @@ model Asset {
 }
 
 model AssetAssignment {
-  id          String   @id @default(uuid()) @db.Uuid
-  assetId     String   @db.Uuid
-  userId      String   @db.Uuid
-  assignedAt  DateTime @default(now())
-  returnedAt  DateTime?
-  notes       String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String           @id @default(uuid()) @db.Uuid
+  assetId          String           @db.Uuid
+  userId           String           @db.Uuid
+  assignedAt       DateTime         @default(now())
+  returnedAt       DateTime?
+  acceptanceStatus AcceptanceStatus @default(PENDING)
+  signature        String?          @db.VarChar(500)
+  signedAt         DateTime?
+  notes            String?          @db.Text
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   asset        Asset   @relation(fields: [assetId], references: [id])
   user         User    @relation(fields: [userId], references: [id])
 
   @@index([assetId])
   @@index([userId])
+  @@index([acceptanceStatus])
   @@map("asset_assignments")
 }
 
@@ -152,4 +157,47 @@ model MaintenanceRecord {
   @@index([assetId])
   @@index([status])
   @@map("maintenance_records")
+}
+
+model Organization {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(255)
+  code         String    @unique @db.VarChar(50)
+  address      String?   @db.Text
+  phone        String?   @db.VarChar(50)
+  email        String?   @db.VarChar(255)
+  website      String?   @db.VarChar(255)
+  logo         String?   @db.VarChar(500)
+  taxId        String?   @db.VarChar(100)
+  fiscalYear   String?   @db.VarChar(50)
+  timezone     String?   @db.VarChar(100)
+  workingHours String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  @@index([deletedAt])
+  @@map("organizations")
+}
+
+enum AcceptanceStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
 }
