@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ORG_ADMIN
+  ASSET_MANAGER
+  DEPT_HEAD
+  EMPLOYEE
+}
+
+enum DepartmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AssetStatus {
+  Available
+  Allocated
+  Reserved
+  UnderMaintenance
+  Lost
+  Retired
+  Disposed
+}
+
+enum AllocationStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+}
+
+enum BookingStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  TECHNICIAN_ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum Condition {
+  NEW
+  GOOD
+  FAIR
+  POOR
+}
+
+enum DepreciationMethod {
+  STRAIGHT_LINE
+  DECLINING_BALANCE
+  DOUBLE_DECLINING
+  SUM_OF_YEARS
+  UNITS_OF_PRODUCTION
+  NONE
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  address   String?
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  employees Employee[]
+
+  @@index([code])
+  @@index([deletedAt])
+  @@map("organizations")
+}
+
+model Department {
+  id               String           @id @default(uuid())
+  name             String
+  parentId         String?
+  parent           Department?      @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children         Department[]     @relation("DeptHierarchy")
+  departmentHead   Employee?        @relation("DepartmentHead", fields: [departmentHeadId], references: [id])
+  departmentHeadId String?
+  status           DepartmentStatus @default(ACTIVE)
+  employees        Employee[]
+  assets           Asset[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@map("departments")
+}
+
+model Employee {
+  id                      String       @id @default(uuid())
+  organizationId          String
+  name                    String
+  email                   String       @unique
+  password                String
+  role                    Role         @default(EMPLOYEE)
+  departmentId            String?
+  emailVerified           Boolean      @default(false)
+  emailVerificationToken  String?
+  emailVerificationExpires DateTime?
+  resetPasswordToken      String?
+  resetPasswordExpires    DateTime?
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  deletedAt               DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  headedDepartments Department[] @relation("DepartmentHead")
+  raisedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceRaisedBy")
+  technicianMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceTechnician")
+  bookings Booking[]
+  refreshTokens RefreshToken[]
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([deletedAt])
+  @@map("employees")
+}
+
+model AssetCategory {
+  id                 String             @id @default(uuid())
+  name               String             @unique
+  description        String?
+  parentId           String?
+  parent             AssetCategory?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children           AssetCategory[]    @relation("CategoryHierarchy")
+  depreciationMethod DepreciationMethod @default(NONE)
+  expectedLife       Int?
+  image              String?
+  status             CategoryStatus     @default(ACTIVE)
+  customFields       Json?
+  assets             Asset[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@map("asset_categories")
+}
+
+model Asset {
+  id                  String             @id @default(uuid())
+  name                String
+  assetTag            String             @unique
+  serialNumber        String?            @unique
+  acquisitionDate     DateTime
+  cost                Float
+  condition           Condition          @default(GOOD)
+  location            String
+  shared              Boolean            @default(false)
+  bookable            Boolean            @default(false)
+  status              AssetStatus        @default(Available)
+  category            AssetCategory      @relation(fields: [categoryId], references: [id])
+  categoryId          String
+  department          Department?        @relation(fields: [departmentId], references: [id])
+  departmentId        String?
+  allocations         Allocation[]
+  bookings            Booking[]
+  maintenanceRequests MaintenanceRequest[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@map("assets")
+}
+
+model Allocation {
+  id                String          @id @default(uuid())
+  asset             Asset           @relation(fields: [assetId], references: [id])
+  assetId           String
+  holderType        String
+  holderId          String
+  holderName        String
+  expectedReturnDate DateTime?
+  actualReturnDate  DateTime?
+  status            AllocationStatus @default(ACTIVE)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("allocations")
+}
+
+model Booking {
+  id         String       @id @default(uuid())
+  asset      Asset        @relation(fields: [assetId], references: [id])
+  assetId    String
+  user       Employee     @relation(fields: [userId], references: [id])
+  userId     String
+  startTime  DateTime
+  endTime    DateTime
+  status     BookingStatus @default(UPCOMING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@map("bookings")
+}
+
+model MaintenanceRequest {
+  id           String            @id @default(uuid())
+  asset        Asset             @relation(fields: [assetId], references: [id])
+  assetId      String
+  raisedBy     Employee          @relation("MaintenanceRaisedBy", fields: [raisedById], references: [id])
+  raisedById   String
+  issue        String
+  priority     String
+  photo        String?
+  status       MaintenanceStatus @default(PENDING)
+  technician   Employee?         @relation("MaintenanceTechnician", fields: [technicianId], references: [id])
+  technicianId String?
+  resolvedAt   DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("maintenance_requests")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  employeeId String
+  employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  @@index([token])
+  @@index([employeeId])
+  @@map("refresh_tokens")
+}

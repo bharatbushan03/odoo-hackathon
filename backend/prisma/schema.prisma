@@ -8,10 +8,12 @@ datasource db {
 }
 
 enum Role {
-  ADMIN
+  SUPER_ADMIN
+  ORG_ADMIN
   ASSET_MANAGER
   DEPT_HEAD
   EMPLOYEE
+  AUDITOR
 }
 
 enum DepartmentStatus {
@@ -29,6 +31,14 @@ enum AssetStatus {
   Disposed
 }
 
+enum LifecycleState {
+  NEW
+  IN_USE
+  MAINTENANCE
+  RETIRED
+  DISPOSED
+}
+
 enum AllocationStatus {
   ACTIVE
   RETURNED
@@ -42,13 +52,40 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+  EMERGENCY
+  PREDICTIVE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 enum MaintenanceStatus {
+  REQUESTED
   PENDING
   APPROVED
   REJECTED
   TECHNICIAN_ASSIGNED
   IN_PROGRESS
-  RESOLVED
+  COMPLETED
+  CANCELLED
+}
+
+enum RecurrenceFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUALLY
+  ANNUALLY
+  CUSTOM
 }
 
 enum Condition {
@@ -58,73 +95,182 @@ enum Condition {
   POOR
 }
 
+enum DepreciationMethod {
+  STRAIGHT_LINE
+  DECLINING_BALANCE
+  DOUBLE_DECLINING
+  SUM_OF_YEARS
+  UNITS_OF_PRODUCTION
+  NONE
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  address   String?
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  employees Employee[]
+  vendors   Vendor[]
+
+  @@index([code])
+  @@index([deletedAt])
+  @@map("organizations")
+}
+
 model Department {
-  id          String           @id @default(uuid())
-  name        String
-  parentId    String?
-  parent      Department?      @relation("DeptHierarchy", fields: [parentId], references: [id])
-  children    Department[]     @relation("DeptHierarchy")
-  status      DepartmentStatus @default(ACTIVE)
-  employees   Employee[]
-  assets      Asset[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id               String           @id @default(uuid())
+  name             String
+  parentId         String?
+  parent           Department?      @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children         Department[]     @relation("DeptHierarchy")
+  departmentHead   Employee?        @relation("DepartmentHead", fields: [departmentHeadId], references: [id])
+  departmentHeadId String?
+  status           DepartmentStatus @default(ACTIVE)
+  employees        Employee[]
+  assets           Asset[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   @@map("departments")
 }
 
 model Employee {
-  id           String      @id @default(uuid())
-  name         String
-  email        String      @unique
-  password     String
-  role         Role        @default(EMPLOYEE)
-  department   Department? @relation(fields: [departmentId], references: [id])
-  departmentId String?
+  id                      String       @id @default(uuid())
+  organizationId          String
+  name                    String
+  email                   String       @unique
+  password                String
+  role                    Role         @default(EMPLOYEE)
+  departmentId            String?
+  emailVerified           Boolean      @default(false)
+  emailVerificationToken  String?
+  emailVerificationExpires DateTime?
+  resetPasswordToken      String?
+  resetPasswordExpires    DateTime?
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  deletedAt               DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  headedDepartments Department[] @relation("DepartmentHead")
   raisedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceRaisedBy")
   technicianMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceTechnician")
+  approvedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceApprovedBy")
+  completedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceCompletedBy")
+  uploadedMaintenanceAttachments MaintenanceAttachment[] @relation("MaintenanceAttachmentUploader")
   bookings Booking[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  refreshTokens RefreshToken[]
 
+  @@index([organizationId])
+  @@index([email])
+  @@index([deletedAt])
   @@map("employees")
 }
 
 model AssetCategory {
-  id           String   @id @default(uuid())
-  name         String   @unique
-  description  String?
-  customFields Json?
-  assets       Asset[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String             @id @default(uuid())
+  name               String             @unique
+  description        String?
+  parentId           String?
+  parent             AssetCategory?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children           AssetCategory[]    @relation("CategoryHierarchy")
+  depreciationMethod DepreciationMethod @default(NONE)
+  expectedLife       Int?
+  image              String?
+  status             CategoryStatus     @default(ACTIVE)
+  customFields       Json?
+  assets             Asset[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   @@map("asset_categories")
 }
 
 model Asset {
   id                  String             @id @default(uuid())
+  assetId             String             @unique
   name                String
   assetTag            String             @unique
   serialNumber        String?            @unique
-  acquisitionDate     DateTime
-  cost                Float
-  condition           Condition          @default(GOOD)
-  location            String
-  shared              Boolean            @default(false)
-  bookable            Boolean            @default(false)
-  status              AssetStatus        @default(Available)
-  category            AssetCategory      @relation(fields: [categoryId], references: [id])
-  categoryId          String
+  barcode             String?            @unique
+  qrcode              String?            @unique
+  
+  vendor              String?
+  purchaseDate        DateTime
+  purchaseCost        Float
+  
+  warranty            String?
+  warrantyExpires     DateTime?
+  
   department          Department?        @relation(fields: [departmentId], references: [id])
   departmentId        String?
-  allocations         Allocation[]
-  bookings            Booking[]
-  maintenanceRequests MaintenanceRequest[]
+  
+  assignedEmployee    Employee?          @relation(fields: [assignedEmployeeId], references: [id])
+  assignedEmployeeId  String?
+  
+  currentLocation     String
+  category            AssetCategory      @relation(fields: [categoryId], references: [id])
+  categoryId          String
+  
+  lifecycleState      LifecycleState     @default(NEW)
+  status              AssetStatus        @default(Available)
+  condition           Condition          @default(GOOD)
+  
+  notes               String?
+  purchaseOrderNumber String?
+  orderDate           DateTime?
+  
+  shared              Boolean            @default(false)
+  bookable            Boolean            @default(false)
+  assetCondition      Condition          @default(GOOD)
+  
+
+  attachments         AssetAttachment[]
+  
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
+  @@index([assetTag])
+  @@index([serialNumber])
+  @@index([barcode])
+  @@index([qrcode])
+  @@index([categoryId])
+  @@index([departmentId])
+  @@index([assignedEmployeeId])
+  @@index([status])
+  @@index([lifecycleState])
+  @@index([purchaseDate])
+  @@index([createdAt])
   @@map("assets")
+}
+
+model AssetAttachment {
+  id        String   @id @default(uuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  fileName  String
+  filePath  String
+  fileType  String
+  fileSize  Int
+  uploadedBy String
+  uploadedAt DateTime @default(now())
+
+  @@index([assetId])
+  @@index([uploadedAt])
+  @@map("asset_attachments")
 }
 
 model Allocation {
@@ -158,21 +304,126 @@ model Booking {
   @@map("bookings")
 }
 
-model MaintenanceRequest {
-  id           String            @id @default(uuid())
-  asset        Asset             @relation(fields: [assetId], references: [id])
-  assetId      String
-  raisedBy     Employee          @relation("MaintenanceRaisedBy", fields: [raisedById], references: [id])
-  raisedById   String
-  issue        String
-  priority     String
-  photo        String?
-  status       MaintenanceStatus @default(PENDING)
-  technician   Employee?         @relation("MaintenanceTechnician", fields: [technicianId], references: [id])
-  technicianId String?
-  resolvedAt   DateTime?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+model Vendor {
+  id              String   @id @default(uuid())
+  organizationId  String
+  name            String
+  contactPerson   String?
+  email           String?
+  phone           String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  zipCode         String?
+  taxId           String?
+  paymentTerms    String?
+  isPreferred     Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  rating          Int?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
 
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  maintenanceRequests MaintenanceRequest[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("vendors")
+}
+
+model MaintenanceRequest {
+  id              String            @id @default(uuid())
+  assetId         String
+  asset           Asset             @relation(fields: [assetId], references: [id])
+
+  type            MaintenanceType   @default(CORRECTIVE)
+  title           String
+  description     String?
+  priority        Priority          @default(MEDIUM)
+  status          MaintenanceStatus @default(REQUESTED)
+
+  scheduledDate   DateTime?
+  startDate       DateTime?
+  completionDate  DateTime?
+  isRecurring     Boolean           @default(false)
+  frequency       RecurrenceFrequency?
+  nextDueDate     DateTime?
+
+  raisedById      String
+  raisedBy        Employee          @relation("MaintenanceRaisedBy", fields: [raisedById], references: [id])
+  technicianId    String?
+  technician      Employee?         @relation("MaintenanceTechnician", fields: [technicianId], references: [id])
+  approvedById    String?
+  approvedBy      Employee?         @relation("MaintenanceApprovedBy", fields: [approvedById], references: [id])
+  completedById   String?
+  completedBy     Employee?         @relation("MaintenanceCompletedBy", fields: [completedById], references: [id])
+
+  vendorId        String?
+  vendor          Vendor?           @relation(fields: [vendorId], references: [id])
+
+  estimatedCost   Float             @default(0)
+  laborCost       Float             @default(0)
+  partsCost       Float             @default(0)
+  vendorCost      Float             @default(0)
+  totalCost       Float             @default(0)
+
+  issue           String?
+  resolution      String?
+  partsUsed       String?
+  notes           String?
+
+  resolvedAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+
+  attachments     MaintenanceAttachment[]
+
+  @@index([assetId])
+  @@index([raisedById])
+  @@index([technicianId])
+  @@index([vendorId])
+  @@index([status])
+  @@index([type])
+  @@index([priority])
+  @@index([scheduledDate])
+  @@index([deletedAt])
   @@map("maintenance_requests")
 }
+
+model MaintenanceAttachment {
+  id                  String             @id @default(uuid())
+  maintenanceRequestId String
+  maintenanceRequest  MaintenanceRequest @relation(fields: [maintenanceRequestId], references: [id], onDelete: Cascade)
+  fileName            String
+  filePath            String
+  fileType            String
+  fileSize            Int
+  uploadedById        String
+  uploadedBy          Employee           @relation(fields: [uploadedById], references: [id])
+  uploadedAt          DateTime           @default(now())
+
+  @@index([maintenanceRequestId])
+  @@map("maintenance_attachments")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  employeeId String
+  employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  @@index([token])
+  @@index([employeeId])
+  @@map("refresh_tokens")
+}
+
+

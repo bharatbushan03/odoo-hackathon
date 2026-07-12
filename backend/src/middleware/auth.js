@@ -1,34 +1,44 @@
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/prisma');
+const { accessToken: accessTokenConfig } = require('../config/jwt');
+const AppError = require('../utils/AppError');
+const prisma = require('../config/database');
 
-const secret = () => process.env.JWT_SECRET || 'assetflow-dev-secret';
-
-async function authenticate(req, res, next) {
-  const header = req.get('authorization') || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-  if (!token) return res.status(401).json({ message: 'Missing or invalid JWT' });
-  try {
-    const payload = jwt.verify(token, secret());
-    const user = await prisma.employee.findUnique({ where: { id: payload.userId } });
-    if (!user) return res.status(401).json({ message: 'Missing or invalid JWT' });
-    req.user = { id: user.id, role: user.role, departmentId: user.departmentId };
-    next();
-  } catch {
-    res.status(401).json({ message: 'Missing or invalid JWT' });
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next(new AppError('Access denied. No token provided', 401));
   }
-}
 
-const requireRoles = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) return res.status(403).json({ message: 'Forbidden' });
-  next();
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, accessTokenConfig.secret);
+    const employee = await prisma.employee.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, name: true, email: true, role: true, organizationId: true, status: true, emailVerified: true },
+    });
+
+    if (!employee) {
+      return next(new AppError('User not found', 401));
+    }
+
+    req.user = employee;
+    next();
+  } catch (err) {
+    return next(new AppError('Invalid or expired token', 401));
+  }
 };
 
-function sign(user) {
-  return jwt.sign(
-    { userId: user.id, role: user.role, departmentId: user.departmentId },
-    secret(),
-    { expiresIn: '8h' },
-  );
-}
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return next(new AppError('Authentication required', 401));
+    }
+    if (!roles.includes(req.user.role)) {
+      return next(new AppError('Insufficient permissions', 403));
+    }
+    next();
+  };
+};
 
-module.exports = { authenticate, requireRoles, sign };
+module.exports = { authenticate, authorize };

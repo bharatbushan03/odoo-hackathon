@@ -16,6 +16,28 @@ const deptStatusOut = { ACTIVE: 'Active', INACTIVE: 'Inactive' };
 const deptStatusIn = { Active: 'ACTIVE', Inactive: 'INACTIVE' };
 const conditionIn = { New: 'NEW', Good: 'GOOD', Fair: 'FAIR', Poor: 'POOR' };
 const conditionOut = { NEW: 'New', GOOD: 'Good', FAIR: 'Fair', POOR: 'Poor' };
+
+const categoryStatusOut = { ACTIVE: 'Active', INACTIVE: 'Inactive' };
+const categoryStatusIn = { Active: 'ACTIVE', Inactive: 'INACTIVE' };
+
+const depreciationMethodOut = {
+  STRAIGHT_LINE: 'StraightLine',
+  DECLINING_BALANCE: 'DecliningBalance',
+  DOUBLE_DECLINING: 'DoubleDeclining',
+  SUM_OF_YEARS: 'SumOfYears',
+  UNITS_OF_PRODUCTION: 'UnitsOfProduction',
+  NONE: 'None',
+};
+
+const depreciationMethodIn = {
+  StraightLine: 'STRAIGHT_LINE',
+  DecliningBalance: 'DECLINING_BALANCE',
+  DoubleDeclining: 'DOUBLE_DECLINING',
+  SumOfYears: 'SUM_OF_YEARS',
+  UnitsOfProduction: 'UNITS_OF_PRODUCTION',
+  None: 'NONE',
+};
+
 const assetStatusIn = {
   Available: 'Available',
   Allocated: 'Allocated',
@@ -25,6 +47,7 @@ const assetStatusIn = {
   Retired: 'Retired',
   Disposed: 'Disposed',
 };
+
 const assetStatusOut = {
   Available: 'Available',
   Allocated: 'Allocated',
@@ -53,6 +76,13 @@ function department(d) {
     id: d.id,
     name: d.name,
     parentId: d.parentId,
+    departmentHeadId: d.departmentHeadId,
+    departmentHead: d.departmentHead ? {
+      id: d.departmentHead.id,
+      name: d.departmentHead.name,
+      email: d.departmentHead.email,
+      role: roleOut[d.departmentHead.role],
+    } : null,
     status: deptStatusOut[d.status],
     createdAt: d.createdAt.toISOString(),
     updatedAt: d.updatedAt.toISOString(),
@@ -64,6 +94,15 @@ function category(c) {
     id: c.id,
     name: c.name,
     description: c.description,
+    parentId: c.parentId,
+    parent: c.parent ? {
+      id: c.parent.id,
+      name: c.parent.name,
+    } : null,
+    depreciationMethod: depreciationMethodOut[c.depreciationMethod],
+    expectedLife: c.expectedLife,
+    image: c.image,
+    status: categoryStatusOut[c.status],
     customFields: c.customFields || {},
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
@@ -123,8 +162,15 @@ module.exports = {
   roleOut,
   roleIn,
   deptStatusIn,
+  deptStatusOut,
+  categoryStatusIn,
+  categoryStatusOut,
+  depreciationMethodIn,
+  depreciationMethodOut,
   assetStatusIn,
+  assetStatusOut,
   conditionIn,
+  conditionOut,
   employee,
   department,
   category,

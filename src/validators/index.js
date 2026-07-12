@@ -1,4 +1,12 @@
 const { z } = require('zod');
+const { createOrganizationSchema, updateOrganizationSchema } = require('./organization');
+const {
+  assignAssetSchema,
+  acceptAssignmentSchema,
+  rejectAssignmentSchema,
+  returnAssetSchema,
+  transferAssetSchema,
+} = require('./assignment');
 
 const paginationSchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
@@ -9,4 +17,11 @@ const paginationSchema = z.object({
 
 module.exports = {
   paginationSchema,
+  createOrganizationSchema,
+  updateOrganizationSchema,
+  assignAssetSchema,
+  acceptAssignmentSchema,
+  rejectAssignmentSchema,
+  returnAssetSchema,
+  transferAssetSchema,
 };

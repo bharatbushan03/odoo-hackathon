@@ -1,6 +1,10 @@
 const express = require('express');
 const { ResponseWrapper } = require('../../utils');
 
+const organizationRoutes = require('./organizationRoutes');
+const assignmentRoutes = require('./assignmentRoutes');
+const notificationRoutes = require('./notificationRoutes');
+
 const router = express.Router();
 
 router.get('/health', (req, res) => {
@@ -13,5 +17,9 @@ router.get('/health', (req, res) => {
     },
   });
 });
+
+router.use('/organizations', organizationRoutes);
+router.use('/assignments', assignmentRoutes);
+router.use('/notifications', notificationRoutes);
 
 module.exports = router;
