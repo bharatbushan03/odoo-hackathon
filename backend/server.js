@@ -5,12 +5,51 @@ const { Pool } = require('pg');
 const routes = require('./src/routes');
 const errorHandler = require('./src/middleware/errorHandler');
 const { apiLimiter } = require('./src/middleware/rateLimiter');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const path = require('path');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '10kb' }));
 app.use('/api', apiLimiter);
+
+// Load Swagger specification
+const swaggerSpec = YAML.load(path.join(__dirname, 'swagger', 'vendor-management-openapi.yaml'));
+
+// Serve Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "Vendor Management API Documentation",
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    displayOperationId: false,
+    filter: true,
+    showRequestDuration: true,
+    showCommonExtensions: true,
+    tryItOutEnabled: true,
+    supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+    docExpansion: 'list',
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 1,
+    maxDisplayedTags: 5,
+  }
+}));
+
+// Serve OpenAPI specification
+app.get('/api-docs/spec', (req, res) => {
+  res.setHeader('Content-Type', 'application/yaml');
+  res.send(swaggerSpec);
+});
+
+// Serve JSON specification
+app.get('/api-docs/spec.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json(swaggerSpec);
+});
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
