@@ -333,7 +333,7 @@ export default function OrganizationSetup() {
       <header className="organization-setup__header">
         <h1 className="organization-setup__title">Organization Setup</h1>
         <p className="organization-setup__description">
-          Manage departments, asset categories, and employee roles.
+          Admin only — manage departments, categories, and employees.
         </p>
       </header>
 

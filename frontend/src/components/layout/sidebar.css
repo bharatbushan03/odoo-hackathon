@@ -1,0 +1,101 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 240px;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  background: #0c0c0c;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  box-sizing: border-box;
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', Consolas, monospace;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding: 0 8px;
+}
+
+.sidebar__logo {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e8e8e8;
+  letter-spacing: 0.04em;
+}
+
+.sidebar__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e8e8e8;
+  letter-spacing: 0.02em;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.sidebar__link {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #9a9a9a;
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  letter-spacing: 0.01em;
+}
+
+.sidebar__link:hover {
+  color: #e8e8e8;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar__link--active {
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.08);
+  border-color: rgba(45, 212, 191, 0.25);
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 16px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .sidebar__brand {
+    margin-bottom: 0;
+    margin-right: auto;
+  }
+
+  .sidebar__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 12px;
+  }
+}
