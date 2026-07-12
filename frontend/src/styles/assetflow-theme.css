@@ -9,8 +9,8 @@
   --af-text: #e8e8e8;
   --af-text-muted: #9a9a9a;
   --af-text-dim: #6b6b6b;
-  --af-accent: #2dd4bf;
-  --af-accent-dim: rgba(45, 212, 191, 0.12);
+  --af-accent: #4ade80;
+  --af-accent-dim: rgba(74, 222, 128, 0.12);
   --af-green: #4ade80;
   --af-green-dim: rgba(74, 222, 128, 0.12);
   --af-red: #f87171;
@@ -32,6 +32,36 @@
   line-height: 1.5;
   min-height: 100%;
   box-sizing: border-box;
+}
+
+.af-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.af-topbar__logo {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--af-border-strong);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--af-text);
+  letter-spacing: 0.04em;
+}
+
+.af-topbar__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--af-text);
+  letter-spacing: 0.02em;
 }
 
 .af-page__header {
@@ -134,12 +164,12 @@
 
 .af-btn--primary {
   background: var(--af-accent-dim);
-  border-color: rgba(45, 212, 191, 0.35);
+  border-color: rgba(74, 222, 128, 0.35);
   color: var(--af-accent);
 }
 
 .af-btn--primary:hover {
-  background: rgba(45, 212, 191, 0.18);
+  background: rgba(74, 222, 128, 0.18);
 }
 
 .af-btn--danger {
@@ -226,7 +256,7 @@
 .af-tab--active {
   color: var(--af-accent);
   background: var(--af-accent-dim);
-  border-color: rgba(45, 212, 191, 0.35);
+  border-color: rgba(74, 222, 128, 0.35);
 }
 
 .af-toolbar {
@@ -345,6 +375,47 @@
   background: rgba(255, 255, 255, 0.04);
   color: var(--af-text-muted);
   border: 1px solid var(--af-border);
+}
+
+.af-toggle {
+  display: inline-flex;
+  border: 1px solid var(--af-border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.af-toggle__btn {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--af-text-muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.af-toggle__btn--active-green {
+  background: var(--af-green-dim);
+  color: var(--af-green);
+}
+
+.af-toggle__btn--active-muted {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--af-text-dim);
+}
+
+.af-note {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--af-border);
+  border-radius: var(--af-radius-sm);
+  font-size: 11px;
+  color: var(--af-text-muted);
+  line-height: 1.6;
 }
 
 .af-form-group {

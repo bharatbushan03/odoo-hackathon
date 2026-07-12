@@ -1,5 +1,12 @@
 import { useState } from 'react';
+import PageTopBar from '../../components/layout/page-topbar.jsx';
 import '../../styles/assetflow-theme.css';
+
+const ASSETS = [
+  { id: 'AF-0114', label: 'AF-0114 — Dell Laptop', holder: 'Priya Shah', dept: 'Engineering' },
+  { id: 'AF-0012', label: 'AF-0012 — Dell Laptop', holder: 'David Kim', dept: 'Engineering' },
+  { id: 'AF-0062', label: 'AF-0062 — Epson Projector', holder: 'Pool', dept: '—' },
+];
 
 const HISTORY = [
   { date: '2026-03-01', from: 'Pool', to: 'Priya Shah', reason: 'New hire onboarding' },
@@ -8,29 +15,51 @@ const HISTORY = [
 ];
 
 export default function AllocationPage() {
+  const [assetId, setAssetId] = useState('AF-0114');
   const [to, setTo] = useState('');
   const [reason, setReason] = useState('');
 
+  const asset = ASSETS.find((a) => a.id === assetId) || ASSETS[0];
+  const isAllocated = asset.holder !== 'Pool';
+
   return (
     <div className="af-page">
+      <PageTopBar />
+
       <header className="af-page__header">
         <h1 className="af-page__title">Allocation &amp; Transfer</h1>
-        <p className="af-page__subtitle">AF-0114 — Dell Laptop</p>
       </header>
 
-      <div className="af-alert af-alert--danger" role="alert">
-        Already allocated to <strong>Priya Shah</strong> (Engineering). Direct reallocation is blocked — submit a transfer request below.
+      <div className="af-form-group" style={{ maxWidth: '400px' }}>
+        <label className="af-label" htmlFor="asset-select">Asset</label>
+        <select
+          id="asset-select"
+          className="af-select"
+          style={{ width: '100%' }}
+          value={assetId}
+          onChange={(e) => setAssetId(e.target.value)}
+        >
+          {ASSETS.map((a) => (
+            <option key={a.id} value={a.id}>{a.label}</option>
+          ))}
+        </select>
       </div>
+
+      {isAllocated && (
+        <div className="af-alert af-alert--danger" role="alert">
+          Already allocated to <strong>{asset.holder}</strong> ({asset.dept}). Direct reallocation is blocked — submit a transfer request below.
+        </div>
+      )}
 
       <div className="af-card" style={{ padding: '20px', marginBottom: '24px' }}>
         <div className="af-form-group">
           <label className="af-label">From</label>
-          <input className="af-input" value="Priya Shah — Engineering" readOnly />
+          <input className="af-input" value={`${asset.holder} — ${asset.dept}`} readOnly />
         </div>
         <div className="af-form-group">
           <label className="af-label" htmlFor="transfer-to">To</label>
           <select id="transfer-to" className="af-select" style={{ width: '100%' }} value={to} onChange={(e) => setTo(e.target.value)}>
-            <option value="">Select employee...</option>
+            <option value="">Select Employee...</option>
             <option value="david">David Kim — Engineering</option>
             <option value="emily">Emily Davis — Marketing</option>
             <option value="james">James Wilson — Operations</option>
@@ -56,11 +85,9 @@ export default function AllocationPage() {
         <ul className="af-list">
           {HISTORY.map((h, i) => (
             <li key={i} className="af-list__item">
-              <span>
-                <strong>{h.date}</strong> — {h.from} → {h.to}
-                <br />
-                <span style={{ color: 'var(--af-text-dim)' }}>{h.reason}</span>
-              </span>
+              <strong>{h.date}</strong> — {h.from} → {h.to}
+              <br />
+              <span style={{ color: 'var(--af-text-dim)' }}>{h.reason}</span>
             </li>
           ))}
         </ul>
