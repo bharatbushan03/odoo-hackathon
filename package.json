@@ -12,9 +12,16 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "node prisma/seed.js",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix"
+    "lint:fix": "eslint src/ --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
-  "keywords": ["asset-management", "enterprise", "lifecycle"],
+  "keywords": [
+    "asset-management",
+    "enterprise",
+    "lifecycle"
+  ],
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -30,8 +37,12 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@jest/globals": "^30.4.1",
     "eslint": "^9.14.0",
+    "jest": "^30.4.2",
     "nodemon": "^3.1.7",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "supertest": "^7.2.2",
+    "uuid": "^14.0.1"
   }
 }
