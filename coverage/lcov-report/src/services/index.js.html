@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>16/16</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>16/16</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -107,29 +107,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -146,29 +146,29 @@
   AssignmentRepository,
   NotificationRepository,
   DashboardRepository,
-} = require('../repositories');
+} = <span class="cstat-no" title="statement not covered" >require('../repositories');</span>
 &nbsp;
-const OrganizationService = require('./organizationService');
-const AssignmentService = require('./assignmentService');
-const NotificationService = require('./notificationService');
-const DashboardService = require('./dashboardService');
-const AuthService = require('./authService');
+const OrganizationService = <span class="cstat-no" title="statement not covered" >require('./organizationService');</span>
+const AssignmentService = <span class="cstat-no" title="statement not covered" >require('./assignmentService');</span>
+const NotificationService = <span class="cstat-no" title="statement not covered" >require('./notificationService');</span>
+const DashboardService = <span class="cstat-no" title="statement not covered" >require('./dashboardService');</span>
+const AuthService = <span class="cstat-no" title="statement not covered" >require('./authService');</span>
 &nbsp;
-const organizationRepository = new OrganizationRepository();
-const organizationService = new OrganizationService(organizationRepository);
+const organizationRepository = <span class="cstat-no" title="statement not covered" >new OrganizationRepository();</span>
+const organizationService = <span class="cstat-no" title="statement not covered" >new OrganizationService(organizationRepository);</span>
 &nbsp;
-const notificationRepository = new NotificationRepository();
-const notificationService = new NotificationService(notificationRepository);
+const notificationRepository = <span class="cstat-no" title="statement not covered" >new NotificationRepository();</span>
+const notificationService = <span class="cstat-no" title="statement not covered" >new NotificationService(notificationRepository);</span>
 &nbsp;
-const assignmentRepository = new AssignmentRepository();
-const assignmentService = new AssignmentService(assignmentRepository, notificationService);
+const assignmentRepository = <span class="cstat-no" title="statement not covered" >new AssignmentRepository();</span>
+const assignmentService = <span class="cstat-no" title="statement not covered" >new AssignmentService(assignmentRepository, notificationService);</span>
 &nbsp;
-const dashboardRepository = new DashboardRepository();
-const dashboardService = new DashboardService(dashboardRepository);
+const dashboardRepository = <span class="cstat-no" title="statement not covered" >new DashboardRepository();</span>
+const dashboardService = <span class="cstat-no" title="statement not covered" >new DashboardService(dashboardRepository);</span>
 &nbsp;
-const authService = new AuthService();
+const authService = <span class="cstat-no" title="statement not covered" >new AuthService();</span>
 &nbsp;
-module.exports = {
+<span class="cstat-no" title="statement not covered" >module.exports = {</span>
   OrganizationService,
   organizationService,
   NotificationService,
@@ -187,7 +187,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-12T08:27:10.766Z
+                at 2026-07-12T08:29:28.713Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>19/19</span>
+                <span class='fraction'>0/19</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>19/19</span>
+                <span class='fraction'>0/19</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -96,72 +96,72 @@
 <a name='L31'></a><a href='#L31'>31</a>
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
-<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { ResponseWrapper } = require('../utils');
-const { HttpStatus } = require('../constants');
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { ResponseWrapper } = <span class="cstat-no" title="statement not covered" >require('../utils');</span>
+const { HttpStatus } = <span class="cstat-no" title="statement not covered" >require('../constants');</span>
 &nbsp;
 class AuthController {
-  constructor(authService) {
-    this.authService = authService;
+<span class="fstat-no" title="function not covered" >  co</span>nstructor(authService) {
+<span class="cstat-no" title="statement not covered" >    this.authService = authService;</span>
   }
 &nbsp;
-  login = async (req, res) =&gt; {
-    const { email, password } = req.body;
-    const data = await this.authService.login(email, password);
-    ResponseWrapper.success(res, { message: 'Login successful', data }, HttpStatus.OK);
+  login = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+    const { email, password } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+    const data = <span class="cstat-no" title="statement not covered" >await this.authService.login(email, password);</span>
+<span class="cstat-no" title="statement not covered" >    ResponseWrapper.success(res, { message: 'Login successful', data }, HttpStatus.OK);</span>
   };
 &nbsp;
-  signup = async (req, res) =&gt; {
-    const { name, email, password } = req.body;
-    const data = await this.authService.signup(name, email, password);
-    ResponseWrapper.success(res, { message: 'Account created successfully', data }, HttpStatus.CREATED);
+  signup = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+    const { name, email, password } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+    const data = <span class="cstat-no" title="statement not covered" >await this.authService.signup(name, email, password);</span>
+<span class="cstat-no" title="statement not covered" >    ResponseWrapper.success(res, { message: 'Account created successfully', data }, HttpStatus.CREATED);</span>
   };
 &nbsp;
-  me = async (req, res) =&gt; {
-    const data = await this.authService.getProfile(req.user.id);
-    ResponseWrapper.success(res, { data }, HttpStatus.OK);
+  me = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+    const data = <span class="cstat-no" title="statement not covered" >await this.authService.getProfile(req.user.id);</span>
+<span class="cstat-no" title="statement not covered" >    ResponseWrapper.success(res, { data }, HttpStatus.OK);</span>
   };
 &nbsp;
-  forgotPassword = async (req, res) =&gt; {
-    const { email } = req.body;
-    const data = await this.authService.forgotPassword(email);
-    ResponseWrapper.success(res, { message: data.message }, HttpStatus.OK);
+  forgotPassword = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+    const { email } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+    const data = <span class="cstat-no" title="statement not covered" >await this.authService.forgotPassword(email);</span>
+<span class="cstat-no" title="statement not covered" >    ResponseWrapper.success(res, { message: data.message }, HttpStatus.OK);</span>
   };
 }
 &nbsp;
-module.exports = AuthController;
+<span class="cstat-no" title="statement not covered" >module.exports = AuthController;</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -169,7 +169,7 @@ module.exports = AuthController;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-12T08:27:10.766Z
+                at 2026-07-12T08:29:28.713Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

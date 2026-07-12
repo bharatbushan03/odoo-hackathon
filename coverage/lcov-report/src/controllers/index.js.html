@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -101,21 +101,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -133,21 +133,21 @@
   notificationService,
   dashboardService,
   authService,
-} = require('../services');
+} = <span class="cstat-no" title="statement not covered" >require('../services');</span>
 &nbsp;
-const OrganizationController = require('./organizationController');
-const AssignmentController = require('./assignmentController');
-const NotificationController = require('./notificationController');
-const DashboardController = require('./dashboardController');
-const AuthController = require('./authController');
+const OrganizationController = <span class="cstat-no" title="statement not covered" >require('./organizationController');</span>
+const AssignmentController = <span class="cstat-no" title="statement not covered" >require('./assignmentController');</span>
+const NotificationController = <span class="cstat-no" title="statement not covered" >require('./notificationController');</span>
+const DashboardController = <span class="cstat-no" title="statement not covered" >require('./dashboardController');</span>
+const AuthController = <span class="cstat-no" title="statement not covered" >require('./authController');</span>
 &nbsp;
-const organizationController = new OrganizationController(organizationService);
-const assignmentController = new AssignmentController(assignmentService);
-const notificationController = new NotificationController(notificationService);
-const dashboardController = new DashboardController(dashboardService);
-const authController = new AuthController(authService);
+const organizationController = <span class="cstat-no" title="statement not covered" >new OrganizationController(organizationService);</span>
+const assignmentController = <span class="cstat-no" title="statement not covered" >new AssignmentController(assignmentService);</span>
+const notificationController = <span class="cstat-no" title="statement not covered" >new NotificationController(notificationService);</span>
+const dashboardController = <span class="cstat-no" title="statement not covered" >new DashboardController(dashboardService);</span>
+const authController = <span class="cstat-no" title="statement not covered" >new AuthController(authService);</span>
 &nbsp;
-module.exports = {
+<span class="cstat-no" title="statement not covered" >module.exports = {</span>
   OrganizationController,
   organizationController,
   AssignmentController,
@@ -166,7 +166,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-12T08:27:10.766Z
+                at 2026-07-12T08:29:28.713Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
