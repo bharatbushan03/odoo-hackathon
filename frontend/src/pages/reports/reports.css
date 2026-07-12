@@ -1,0 +1,45 @@
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.bar-row__label {
+  width: 90px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #9a9a9a;
+}
+
+.bar-row__track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-row__fill {
+  height: 100%;
+  background: #2dd4bf;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.bar-row__value {
+  width: 36px;
+  text-align: right;
+  font-size: 11px;
+  color: #e8e8e8;
+  font-weight: 600;
+}
+
+.reports-chart__body {
+  padding: 18px;
+}
+
+.line-chart {
+  width: 100%;
+  height: 120px;
+}

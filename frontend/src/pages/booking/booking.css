@@ -1,0 +1,49 @@
+.booking-timeline__body {
+  padding: 8px 0;
+}
+
+.booking-slot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.booking-slot:last-child {
+  border-bottom: none;
+}
+
+.booking-slot__time {
+  width: 48px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9a9a9a;
+}
+
+.booking-slot__label {
+  flex: 1;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.booking-slot--free .booking-slot__label {
+  color: #6b6b6b;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.booking-slot--booked .booking-slot__label {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.25);
+  color: #60a5fa;
+}
+
+.booking-slot--conflict .booking-slot__label {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px dashed rgba(248, 113, 113, 0.35);
+  color: #f87171;
+}

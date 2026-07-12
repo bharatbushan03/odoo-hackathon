@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [submitting, setSubmitting] = useState(false);
 
   if (!loading && isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -28,7 +28,7 @@ export default function SignupPage() {
     setSubmitting(true);
     try {
       await signup(name, email, password);
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
