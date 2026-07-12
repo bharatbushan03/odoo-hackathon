@@ -25,6 +25,18 @@ const registerAdmin = [
   body('organizationCode').trim().notEmpty().withMessage('Organization code is required'),
 ];
 
+const registerEmployee = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters')
+    .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
+    .matches(/[a-z]/).withMessage('Password must contain a lowercase letter')
+    .matches(/[0-9]/).withMessage('Password must contain a number'),
+  body('organizationCode').trim().notEmpty().withMessage('Organization code is required'),
+];
+
 const login = [
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').notEmpty().withMessage('Password is required'),
@@ -69,6 +81,7 @@ const verifyEmail = [
 module.exports = {
   registerOrganization,
   registerAdmin,
+  registerEmployee,
   login,
   refreshToken,
   logout,

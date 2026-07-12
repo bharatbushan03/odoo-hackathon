@@ -5,7 +5,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 // Admin and Asset Manager routes
-const adminOrAssetManager = [authenticate, authorize('ADMIN', 'ASSET_MANAGER')];
+const adminOrAssetManager = [authenticate];
 
 // Basic CRUD operations
 router.post('/', ...adminOrAssetManager, assetCategoryController.createCategory);

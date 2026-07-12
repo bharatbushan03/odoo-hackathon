@@ -1,42 +1,100 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import PageTopBar from '../../components/layout/page-topbar.jsx';
+import { assetApi } from '../../lib/api.js';
 import '../../styles/assetflow-theme.css';
-
-const ASSETS = [
-  { tag: 'AF-0012', name: 'Dell Laptop', category: 'IT / Computing', status: 'Allocated', location: 'Bangalore' },
-  { tag: 'AF-0042', name: 'Epson Projector', category: 'AV Equipment', status: 'Maintenance', location: 'HQ Floor 2' },
-  { tag: 'AF-0114', name: 'MacBook Pro', category: 'IT / Computing', status: 'Allocated', location: 'Mumbai' },
-  { tag: 'AF-0189', name: 'Standing Desk', category: 'Furniture', status: 'Available', location: 'HQ Floor 3' },
-  { tag: 'AF-0241', name: 'Conference Phone', category: 'AV Equipment', status: 'Available', location: 'Room 201' },
-];
 
 const STATUS_CLASS = {
   Allocated: 'af-badge--blue',
   Available: 'af-badge--green',
   Maintenance: 'af-badge--orange',
+  UnderMaintenance: 'af-badge--orange',
+  Reserved: 'af-badge--yellow',
+  Lost: 'af-badge--red',
+  Retired: 'af-badge--muted',
+  Disposed: 'af-badge--muted',
 };
+
+const CATEGORIES = [
+  { value: 'IT / Computing', label: 'IT / Computing' },
+  { value: 'AV Equipment', label: 'AV Equipment' },
+  { value: 'Furniture', label: 'Furniture' },
+  { value: 'Vehicles', label: 'Vehicles' },
+  { value: 'Other', label: 'Other' },
+];
 
 export default function AssetsPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [status, setStatus] = useState('all');
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    assetTag: '',
+    serialNumber: '',
+    category: '',
+    acquisitionDate: '',
+    cost: '',
+    condition: 'GOOD',
+    location: '',
+    departmentId: '',
+    shared: false,
+    bookable: false,
+  });
+  const [submitError, setSubmitError] = useState('');
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return ASSETS.filter((a) => {
-      const matchSearch = !q || [a.tag, a.name, a.category, a.location].some((v) => v.toLowerCase().includes(q));
-      const matchCat = category === 'all' || a.category === category;
-      const matchStatus = status === 'all' || a.status === status;
-      return matchSearch && matchCat && matchStatus;
-    });
-  }, [search, category, status]);
+  const loadAssets = async () => {
+    setLoading(true);
+    try {
+      const data = await assetApi.list({ search, category, status });
+      setAssets(data);
+    } catch (err) {
+      console.error('Failed to load assets:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError('');
+    try {
+      await assetApi.create(formData);
+      setShowModal(false);
+      setFormData({
+        name: '',
+        assetTag: '',
+        serialNumber: '',
+        category: '',
+        acquisitionDate: '',
+        cost: '',
+        condition: 'GOOD',
+        location: '',
+        departmentId: '',
+        shared: false,
+        bookable: false,
+      });
+      loadAssets();
+    } catch (err) {
+      setSubmitError(err.message || 'Failed to register asset');
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
 
   return (
     <div className="af-page">
       <PageTopBar />
 
       <header className="af-page__header">
-        <h1 className="af-page__title">Asset Registration &amp; Directory</h1>
+        <h1 className="af-page__title">Asset Registration & Directory</h1>
         <p className="af-page__subtitle">Search by tag, serial, or QR code</p>
       </header>
 
@@ -50,18 +108,24 @@ export default function AssetsPage() {
         />
         <select className="af-select" value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="all">Category</option>
-          <option value="IT / Computing">IT / Computing</option>
-          <option value="AV Equipment">AV Equipment</option>
-          <option value="Furniture">Furniture</option>
+          {CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
         </select>
         <select className="af-select" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="all">Status</option>
           <option value="Available">Available</option>
           <option value="Allocated">Allocated</option>
-          <option value="Maintenance">Maintenance</option>
+          <option value="UnderMaintenance">Maintenance</option>
+          <option value="Reserved">Reserved</option>
+          <option value="Lost">Lost</option>
+          <option value="Retired">Retired</option>
+          <option value="Disposed">Disposed</option>
         </select>
         <div className="af-spacer" />
-        <button type="button" className="af-btn af-btn--primary">+ Register Asset</button>
+        <button type="button" className="af-btn af-btn--primary" onClick={() => setShowModal(true)}>
+          + Register Asset
+        </button>
       </div>
 
       <div className="af-card">
@@ -77,23 +141,195 @@ export default function AssetsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((a) => (
-                <tr key={a.tag}>
-                  <td><strong>{a.tag}</strong></td>
-                  <td>{a.name}</td>
-                  <td>{a.category}</td>
-                  <td>
-                    <span className={`af-badge ${STATUS_CLASS[a.status] || 'af-badge--muted'}`}>
-                      {a.status}
-                    </span>
-                  </td>
-                  <td>{a.location}</td>
-                </tr>
-              ))}
+              {loading ? (
+                <tr><td colSpan={5} style={{textAlign: 'center'}}>Loading...</td></tr>
+              ) : assets.length === 0 ? (
+                <tr><td colSpan={5} style={{textAlign: 'center'}}>No assets found</td></tr>
+              ) : (
+                assets.map((a) => (
+                  <tr key={a.id}>
+                    <td><strong>{a.assetTag}</strong></td>
+                    <td>{a.name}</td>
+                    <td>{a.category?.name || a.category || '—'}</td>
+                    <td>
+                      <span className={`af-badge ${STATUS_CLASS[a.status] || 'af-badge--muted'}`}>
+                        {a.status}
+                      </span>
+                    </td>
+                    <td>{a.location}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {showModal && (
+        <div className="af-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="af-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="af-modal__header">
+              <h3 className="af-modal__title">Register New Asset</h3>
+              <button type="button" className="af-modal__close" onClick={() => setShowModal(false)}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="af-modal__body">
+              {submitError && <div className="af-alert af-alert--danger" style={{ marginBottom: '16px' }}>{submitError}</div>}
+              <div className="af-form-row">
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="name">Asset Name *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    className="af-input"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="assetTag">Asset Tag *</label>
+                  <input
+                    type="text"
+                    id="assetTag"
+                    name="assetTag"
+                    className="af-input"
+                    value={formData.assetTag}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="af-form-row">
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="serialNumber">Serial Number</label>
+                  <input
+                    type="text"
+                    id="serialNumber"
+                    name="serialNumber"
+                    className="af-input"
+                    value={formData.serialNumber}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="category">Category *</label>
+                  <select
+                    id="category"
+                    name="category"
+                    className="af-select"
+                    value={formData.category}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="af-form-row">
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="acquisitionDate">Acquisition Date *</label>
+                  <input
+                    type="date"
+                    id="acquisitionDate"
+                    name="acquisitionDate"
+                    className="af-input"
+                    value={formData.acquisitionDate}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="cost">Cost *</label>
+                  <input
+                    type="number"
+                    id="cost"
+                    name="cost"
+                    className="af-input"
+                    step="0.01"
+                    min="0"
+                    value={formData.cost}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="af-form-row">
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="condition">Condition</label>
+                  <select
+                    id="condition"
+                    name="condition"
+                    className="af-select"
+                    value={formData.condition}
+                    onChange={handleChange}
+                  >
+                    <option value="NEW">New</option>
+                    <option value="GOOD">Good</option>
+                    <option value="FAIR">Fair</option>
+                    <option value="POOR">Poor</option>
+                  </select>
+                </div>
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="location">Location *</label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    className="af-input"
+                    value={formData.location}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="af-form-row">
+                <div className="af-form-group">
+                  <label className="af-label" htmlFor="departmentId">Department</label>
+                  <input
+                    type="text"
+                    id="departmentId"
+                    name="departmentId"
+                    className="af-input"
+                    value={formData.departmentId}
+                    onChange={handleChange}
+                    placeholder="Department ID (optional)"
+                  />
+                </div>
+              </div>
+              <div className="af-form-row" style={{ alignItems: 'flex-end' }}>
+                <label className="af-label af-checkbox">
+                  <input
+                    type="checkbox"
+                    name="shared"
+                    checked={formData.shared}
+                    onChange={handleChange}
+                  />
+                  Shared
+                </label>
+                <label className="af-label af-checkbox">
+                  <input
+                    type="checkbox"
+                    name="bookable"
+                    checked={formData.bookable}
+                    onChange={handleChange}
+                  />
+                  Bookable
+                </label>
+              </div>
+              <div className="af-modal__footer">
+                <button type="button" className="af-btn" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="af-btn af-btn--primary">Register Asset</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
