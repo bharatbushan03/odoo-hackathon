@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: asset-flow-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run prisma:generate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_RESET_SECRET
+        generateValue: true
+      - key: JWT_EMAIL_VERIFY_SECRET
+        generateValue: true
+      - key: BCRYPT_SALT_ROUNDS
+        value: "12"
+      - key: MAX_FILE_SIZE
+        value: "5242880"
+      - key: LOG_LEVEL
+        value: "info"
+    disk:
+      name: uploads
+      mountPath: /opt/render/project/src/uploads
+      sizeGB: 1
