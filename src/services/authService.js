@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { BaseRepository } = require('../repositories');
+const { BaseRepository, OrganizationRepository } = require('../repositories');
 const config = require('../config');
 const { ApiError } = require('../utils');
 const { UserRole } = require('../constants');
@@ -8,6 +8,7 @@ const { UserRole } = require('../constants');
 class AuthService {
   constructor() {
     this.userRepo = new BaseRepository('user');
+    this.orgRepo = new OrganizationRepository();
   }
 
   async login(email, password) {
@@ -77,6 +78,55 @@ class AuthService {
       email: user.email,
       role: user.role,
       departmentId: user.departmentId,
+    };
+  }
+
+  async signupOrg(orgName, orgCode, name, email, password) {
+    const existingOrg = await this.orgRepo.findOne({ code: orgCode, deletedAt: null });
+    if (existingOrg) {
+      throw ApiError.conflict('Organization code already exists');
+    }
+
+    const existingUser = await this.userRepo.findOne({ email });
+    if (existingUser) {
+      throw ApiError.conflict('Email already registered');
+    }
+
+    const nameParts = name.trim().split(/\s+/);
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const hashedPassword = await bcrypt.hash(password, config.bcrypt.saltRounds);
+    const employeeId = `EMP${Date.now()}`;
+
+    const org = await this.orgRepo.create({
+      name: orgName,
+      code: orgCode,
+    });
+
+    const user = await this.userRepo.create({
+      employeeId,
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      role: UserRole.ADMIN,
+    });
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn },
+    );
+
+    return {
+      token,
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`.trim(),
+      email: user.email,
+      role: user.role,
+      departmentId: user.departmentId,
+      organization: org,
     };
   }
 

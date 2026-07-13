@@ -13,10 +13,14 @@ const config = {
   },
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'default-secret',
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    secret: process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'default-secret',
+    expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '15m',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'default-refresh-secret',
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    resetSecret: process.env.JWT_RESET_SECRET || 'default-reset-secret',
+    resetExpiresIn: process.env.JWT_RESET_EXPIRES_IN || '1h',
+    emailVerifySecret: process.env.JWT_EMAIL_VERIFY_SECRET || 'default-verify-secret',
+    emailVerifyExpiresIn: process.env.JWT_EMAIL_VERIFY_EXPIRES_IN || '24h',
   },
 
   bcrypt: {

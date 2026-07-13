@@ -132,7 +132,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <button
+<button
             type="submit"
             className="auth-btn auth-btn--primary"
             disabled={submitting}
@@ -141,23 +141,20 @@ export default function LoginPage() {
           </button>
         </form>
 
-<div className="auth-divider">
-          <span>New here?</span>
-        </div>
-
-        <div className="auth-info-box">
-          Sign up creates an employee account. Admin roles are assigned later.
+        <div className="auth-divider" style={{ marginTop: '16px' }}>
+          <span>Need to create an organization?</span>
         </div>
 
         <Link to="/register-org" className="auth-btn auth-btn--outline auth-btn--link">
           Create Organization
         </Link>
-        <Link to="/signup" className="auth-btn auth-btn--outline auth-btn--link" style={{ marginTop: '8px' }}>
-          Join as Employee
-        </Link>
-        <Link to="/signup" className="auth-btn auth-btn--outline auth-btn--link" style={{ marginTop: '8px' }}>
-          Join as Employee
-        </Link>
+
+        <p className="auth-card__footer">
+          Don't have an account?{' '}
+          <Link to="/signup" className="auth-card__link">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
