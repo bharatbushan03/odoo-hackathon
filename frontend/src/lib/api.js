@@ -41,7 +41,7 @@ export const authApi = {
     }),
 
   signup: (name, email, password, organizationCode) =>
-    apiFetch('/api/v1/auth/register', {
+    apiFetch('/api/v1/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ name, email, password, organizationCode }),
     }),
