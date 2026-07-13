@@ -40,7 +40,7 @@ export default function SignupPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-card__title">AssetFlow \u2014 register</h1>
+        <h1 className="auth-card__title">AssetFlow — register</h1>
 
         <div className="auth-card__logo-wrap">
           <div className="auth-card__logo-circle" aria-hidden="true">AF</div>
@@ -109,7 +109,7 @@ export default function SignupPage() {
               id="signup-password"
               type="password"
               className="auth-form__input"
-              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"

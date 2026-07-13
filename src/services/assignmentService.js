@@ -232,7 +232,7 @@ class AssignmentService {
         where: { id: data.assetId },
         data: {
           status: 'ASSIGNED',
-          assignedToId: null,
+          assignedToId: data.toUserId,
         },
       });
 

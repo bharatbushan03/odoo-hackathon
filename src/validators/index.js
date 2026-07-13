@@ -7,7 +7,7 @@ const {
   returnAssetSchema,
   transferAssetSchema,
 } = require('./assignment');
-const { loginSchema, signupSchema, forgotPasswordSchema } = require('./auth');
+const { loginSchema, signupSchema, signupOrgSchema, forgotPasswordSchema } = require('./auth');
 
 const paginationSchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
@@ -27,5 +27,6 @@ module.exports = {
   transferAssetSchema,
   loginSchema,
   signupSchema,
+  signupOrgSchema,
   forgotPasswordSchema,
 };
